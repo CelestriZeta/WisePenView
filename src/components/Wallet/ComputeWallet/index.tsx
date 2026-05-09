@@ -16,7 +16,7 @@ import { useAppMessage } from '@/hooks/useAppMessage';
 import type { WalletTransactionKind, WalletTransactionRecord } from '@/types/wallet';
 import { formatCompactNumber } from '@/utils/number';
 import { parseErrorMessage } from '@/utils/parseErrorMessage';
-import { formatTimestampToDateTime } from '@/utils/time';
+import { formatTimestampToDateTime } from '@/utils/format/formatTime';
 import type { ComputeWalletProps, ComputeWalletRef } from './index.type';
 import styles from './style.module.less';
 

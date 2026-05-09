@@ -1,5 +1,5 @@
 import { toIdString } from '@/utils/number';
-import { formatTimestampToDate } from '@/utils/time';
+import { formatTimestampToDate } from '@/utils/format/formatTime';
 import { mapRoleCodeToGroupMemberRole } from '@/constants/group';
 import type { Group, GroupFileOrgLogic, GroupMemberList, GroupResConfig } from '@/types/group';
 import { GroupApi, GroupMemberApi, GroupResConfigApi } from '@/apis/group';

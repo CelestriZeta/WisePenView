@@ -5,7 +5,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { AiOutlineFolder, AiOutlineTag } from 'react-icons/ai';
 import FileTypeIcon from '@/components/Common/FileTypeIcon';
 import { LuEllipsisVertical, LuPencil, LuTrash2, LuFolderInput, LuTag } from 'react-icons/lu';
-import { formatSize } from '@/utils/format';
+import { formatFileSize } from '@/utils/format/formatFileSize';
 import { getFolderDisplayName } from '@/utils/path';
 import type { ResourceItem } from '@/types/resource';
 import type { TagTreeNode } from '@/services/Tag/index.type';
@@ -125,7 +125,7 @@ export function getTreeDriveColumns(
       width: 100,
       render: (_: unknown, record: TreeRowItem) =>
         record._type === 'file'
-          ? formatSize(record.data.size)
+          ? formatFileSize(record.data.size)
           : record._type === 'loadMore'
             ? null
             : '-',
