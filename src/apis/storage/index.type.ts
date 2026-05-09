@@ -1,5 +1,5 @@
-export type ImageUploadRequest = FormData;
-export interface ImageUploadResponse {
+export type ImageUploadApiRequest = FormData;
+export interface ImageUploadApiResponse {
   fileId?: number;
   domain: string;
   objectKey: string;

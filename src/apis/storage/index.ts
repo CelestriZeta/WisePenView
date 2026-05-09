@@ -1,7 +1,10 @@
 import { apiPost } from '@/apis/_runtime/request';
-import type { ImageUploadRequest, ImageUploadResponse } from './index.type';
+import type { ImageUploadApiRequest, ImageUploadApiResponse } from './index.type';
 
-function imageUpload(body: ImageUploadRequest, timeout?: number): Promise<ImageUploadResponse> {
+function imageUpload(
+  body: ImageUploadApiRequest,
+  timeout?: number
+): Promise<ImageUploadApiResponse> {
   return apiPost('/storage/imageUpload', body, timeout ? { timeout } : undefined);
 }
 

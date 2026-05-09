@@ -1,33 +1,33 @@
 import { apiPost } from '@/apis/_runtime/request';
 import type {
-  LoginRequest,
-  LoginResponse,
-  LogoutResponse,
-  NewPasswordRequest,
-  NewPasswordResponse,
-  RegisterRequest,
-  RegisterResponse,
-  ResetPasswordRequest,
-  ResetPasswordResponse,
+  LoginApiRequest,
+  LoginApiResponse,
+  LogoutApiResponse,
+  NewPasswordApiRequest,
+  NewPasswordApiResponse,
+  RegisterApiRequest,
+  RegisterApiResponse,
+  ResetPasswordApiRequest,
+  ResetPasswordApiResponse,
 } from './index.type';
 
-function login(req: LoginRequest): Promise<LoginResponse> {
+function login(req: LoginApiRequest): Promise<LoginApiResponse> {
   return apiPost('/auth/login', req);
 }
 
-function logout(): Promise<LogoutResponse> {
+function logout(): Promise<LogoutApiResponse> {
   return apiPost('/auth/logout');
 }
 
-function register(req: RegisterRequest): Promise<RegisterResponse> {
+function register(req: RegisterApiRequest): Promise<RegisterApiResponse> {
   return apiPost('/auth/register', req);
 }
 
-function forgotPasswordEmail(req: ResetPasswordRequest): Promise<ResetPasswordResponse> {
+function forgotPasswordEmail(req: ResetPasswordApiRequest): Promise<ResetPasswordApiResponse> {
   return apiPost('/auth/forgot-password/email', req);
 }
 
-function forgotPasswordReset(req: NewPasswordRequest): Promise<NewPasswordResponse> {
+function forgotPasswordReset(req: NewPasswordApiRequest): Promise<NewPasswordApiResponse> {
   return apiPost('/auth/forgot-password/reset', req);
 }
 

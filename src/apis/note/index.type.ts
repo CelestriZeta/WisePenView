@@ -1,15 +1,15 @@
 import type { Block, NoteInfoResponse } from '@/types/note';
 
-export interface AddNoteRequest {
+export interface AddNoteApiRequest {
   title: string;
   initial_content?: Block[];
   source?: string;
 }
 
-export type AddNoteResponse = string;
+export type AddNoteApiResponse = string;
 
-export interface GetNoteInfoRequest {
+export interface GetNoteInfoApiRequest {
   resourceId: string;
 }
 
-export type GetNoteInfoResponse = NoteInfoResponse;
+export type GetNoteInfoApiResponse = NoteInfoResponse;

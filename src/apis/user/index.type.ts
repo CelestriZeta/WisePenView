@@ -1,6 +1,6 @@
 import type { DegreeLevel, UserVerificationMode } from '@/constants/user';
 
-export interface GetUserInfoResponseUserInfo {
+export interface GetUserInfoApiResponseUserInfo {
   id?: string;
   nickname: string | null;
   realName: string | null;
@@ -14,7 +14,7 @@ export interface GetUserInfoResponseUserInfo {
   status: number;
 }
 
-export interface GetUserInfoResponseUserProfile {
+export interface GetUserInfoApiResponseUserProfile {
   sex: number;
   university: string | null;
   college: string | null;
@@ -25,19 +25,19 @@ export interface GetUserInfoResponseUserProfile {
   academicTitle: string | null;
 }
 
-export interface GetUserInfoResponse {
-  userInfo: GetUserInfoResponseUserInfo;
-  userProfile: GetUserInfoResponseUserProfile;
+export interface GetUserInfoApiResponse {
+  userInfo: GetUserInfoApiResponseUserInfo;
+  userProfile: GetUserInfoApiResponseUserProfile;
   readonlyFields: string[] | null;
 }
 
-export interface ChangeUserInfoRequest {
+export interface ChangeUserInfoApiRequest {
   nickname?: string;
   realName?: string;
   avatar?: string;
 }
 
-export interface ChangeUserProfileRequest {
+export interface ChangeUserProfileApiRequest {
   sex?: number;
   university?: string | null;
   college?: string;
@@ -48,26 +48,26 @@ export interface ChangeUserProfileRequest {
   academicTitle?: string;
 }
 
-export interface InitiateEmailVerifyRequest {
+export interface InitiateEmailVerifyApiRequest {
   email: string;
 }
 
-export interface InitiateFudanUISVerifyRequest {
+export interface InitiateFudanUISVerifyApiRequest {
   uisAccount: string;
   uisPassword: string;
 }
 
-export interface CheckEmailVerifyRequest {
+export interface CheckEmailVerifyApiRequest {
   token: string;
 }
 
-export interface RedeemVoucherRequest {
+export interface RedeemVoucherApiRequest {
   voucherCode: string;
 }
 
-export type ListTransactionsRequest = Record<string, string | number | undefined>;
+export type ListTransactionsApiRequest = Record<string, string | number | undefined>;
 
-export interface TransferTokenBetweenGroupAndUserRequest {
+export interface TransferTokenBetweenGroupAndUserApiRequest {
   groupId: string;
   tokenCount: number;
   tokenTransferType: 1 | 2;

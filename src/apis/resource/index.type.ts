@@ -1,6 +1,6 @@
 import type { ResourceItem } from '@/types/resource';
 
-export interface ResourceListPageResponse {
+export interface ResourceListPageApiResponse {
   list: ResourceItem[];
   total: number;
   page: number;
@@ -8,7 +8,7 @@ export interface ResourceListPageResponse {
   totalPage: number;
 }
 
-export interface ListResourceItemsRequest {
+export interface ListResourceItemsApiRequest {
   page: number;
   size: number;
   sortBy: string;
@@ -19,22 +19,22 @@ export interface ListResourceItemsRequest {
   groupId?: string;
 }
 
-export interface RenameResourceRequest {
+export interface RenameResourceApiRequest {
   resourceId: string;
   newName: string;
 }
 
-export interface ChangeResourceTagsRequest {
+export interface ChangeResourceTagsApiRequest {
   resourceId: string;
   tagIds: string[];
   groupId?: string;
 }
 
-export interface RemoveResourcesRequest {
+export interface RemoveResourcesApiRequest {
   resourceIds: string[];
 }
 
-export interface AddTagRequest {
+export interface AddTagApiRequest {
   groupId?: string;
   parentId?: string;
   tagName: string;
@@ -43,7 +43,7 @@ export interface AddTagRequest {
   specifiedUsers?: string[];
 }
 
-export interface ChangeTagRequest {
+export interface ChangeTagApiRequest {
   groupId?: string;
   tagName?: string;
   tagDesc?: string;
@@ -52,18 +52,18 @@ export interface ChangeTagRequest {
   targetTagId: string;
 }
 
-export interface RemoveTagRequest {
+export interface RemoveTagApiRequest {
   groupId?: string;
   targetTagId: string;
 }
 
-export interface MoveTagRequest {
+export interface MoveTagApiRequest {
   groupId?: string;
   targetTagId: string;
   newParentId?: string;
 }
 
-export interface GetTagTreeRequest {
+export interface GetTagTreeApiRequest {
   groupId?: string;
 }
 
@@ -78,4 +78,4 @@ export interface TagTreeResponse {
   children?: TagTreeResponse[];
 }
 
-export type GetTagTreeResponse = TagTreeResponse[];
+export type GetTagTreeApiResponse = TagTreeResponse[];

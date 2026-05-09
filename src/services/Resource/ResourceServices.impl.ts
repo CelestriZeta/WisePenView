@@ -8,14 +8,14 @@ import type {
 import { TAG_QUERY_LOGIC_MODE } from './index.type';
 import type { IResourceService } from './index.type';
 import { ResourceItemApi } from '@/apis/resource';
-import type { ListResourceItemsRequest } from '@/apis/resource/index.type';
+import type { ListResourceItemsApiRequest } from '@/apis/resource/index.type';
 import { useRecentFilesStore } from '@/store';
 
 const requestResourceItemList = async (
   params: GetUserResourcesRequest,
-  queryOverrides: Partial<ListResourceItemsRequest> = {}
+  queryOverrides: Partial<ListResourceItemsApiRequest> = {}
 ): Promise<ResourceListPage> => {
-  const query: ListResourceItemsRequest = {
+  const query: ListResourceItemsApiRequest = {
     page: params.page,
     size: params.size,
     sortBy: params.sortBy,

@@ -1,55 +1,55 @@
 import type { Group, GroupFileOrgLogic } from '@/types/group';
 
-export interface ListGroupRequest {
+export interface ListGroupApiRequest {
   groupRoleFilter: 'JOINED' | 'MANAGED';
   page: number;
   size: number;
 }
 
-export interface ListGroupResponse {
+export interface ListGroupApiResponse {
   total: number;
   list: Group[];
 }
 
-export interface GetGroupInfoRequest {
+export interface GetGroupInfoApiRequest {
   groupId: string;
 }
 
-export type GetGroupInfoResponse = Group;
-export type GetGroupBaseInfoResponse = Group;
-export type AddGroupRequest = {
+export type GetGroupInfoApiResponse = Group;
+export type GetGroupBaseInfoApiResponse = Group;
+export type AddGroupApiRequest = {
   groupName: string;
   groupType: number;
   groupDesc: string;
   groupCoverUrl?: string;
 };
-export type AddGroupResponse = string | number;
-export type ChangeGroupRequest = {
+export type AddGroupApiResponse = string | number;
+export type ChangeGroupApiRequest = {
   groupId: string;
   groupName: string;
   groupDesc: string;
   groupCoverUrl: string;
   groupType: number;
 };
-export interface RemoveGroupRequest {
+export interface RemoveGroupApiRequest {
   groupId: string;
 }
 
-export interface GetGroupConfigRequest {
+export interface GetGroupConfigApiRequest {
   groupId: string;
 }
 
-export interface GetGroupConfigResponse {
+export interface GetGroupConfigApiResponse {
   groupId?: string | number;
   fileOrgLogic?: GroupFileOrgLogic | string;
 }
 
-export interface ChangeGroupConfigRequest {
+export interface ChangeGroupConfigApiRequest {
   groupId: string;
   fileOrgLogic: GroupFileOrgLogic;
 }
 
-export interface JoinGroupRequest {
+export interface JoinGroupApiRequest {
   inviteCode: string;
 }
 
@@ -70,7 +70,7 @@ export interface GroupMemberRawResponse {
   memberInfo: GroupMemberBaseInfo;
 }
 
-export interface FetchGroupMembersResponse {
+export interface FetchGroupMembersApiResponse {
   total: string;
   page: number;
   size: number;
@@ -78,42 +78,42 @@ export interface FetchGroupMembersResponse {
   list: GroupMemberRawResponse[];
 }
 
-export interface ListMemberRequest {
+export interface ListMemberApiRequest {
   groupId: string | number;
   page: number;
   size: number;
 }
 
-export interface GroupRoleResponse {
+export interface GroupRoleApiResponse {
   role: number;
 }
 
-export interface QuitGroupRequest {
+export interface QuitGroupApiRequest {
   groupId: string;
 }
 
-export interface ChangeRoleRequest {
+export interface ChangeRoleApiRequest {
   groupId: string;
   targetUserIds: string[];
   role: number;
 }
 
-export interface KickMemberRequest {
+export interface KickMemberApiRequest {
   groupId: string;
   targetUserIds: string[];
 }
 
-export interface GetGroupTokenRequest {
+export interface GetGroupTokenApiRequest {
   groupId: string | number;
 }
 
-export interface ChangeTokenLimitRequest {
+export interface ChangeTokenLimitApiRequest {
   groupId: string;
   targetUserIds: string[];
   newTokenLimit: number;
 }
 
-export interface GetAllMyGroupTokenInfoRequest {
+export interface GetAllMyGroupTokenInfoApiRequest {
   page: number;
   size: number;
 }

@@ -1,16 +1,16 @@
 import { apiGet, apiPost } from '@/apis/_runtime/request';
 import type {
-  AddNoteRequest,
-  AddNoteResponse,
-  GetNoteInfoRequest,
-  GetNoteInfoResponse,
+  AddNoteApiRequest,
+  AddNoteApiResponse,
+  GetNoteInfoApiRequest,
+  GetNoteInfoApiResponse,
 } from './index.type';
 
-function addNote(req: AddNoteRequest): Promise<AddNoteResponse> {
+function addNote(req: AddNoteApiRequest): Promise<AddNoteApiResponse> {
   return apiPost('/note/addNote', req);
 }
 
-function getNoteInfo(req: GetNoteInfoRequest): Promise<GetNoteInfoResponse> {
+function getNoteInfo(req: GetNoteInfoApiRequest): Promise<GetNoteInfoApiResponse> {
   return apiGet('/note/getNoteInfo', { params: req });
 }
 

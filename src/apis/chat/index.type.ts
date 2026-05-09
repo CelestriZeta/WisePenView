@@ -37,18 +37,18 @@ export interface PageResult<T> {
   total_page: number;
 }
 
-export interface ListModelsResponse {
+export interface ListModelsApiResponse {
   standard_models: BackendModel[];
   advanced_models: BackendModel[];
   other_models: BackendModel[];
 }
-export type CreateSessionRequest = { title?: string };
-export type CreateSessionResponse = ChatSession;
-export type RenameSessionRequest = { sessionId: string; newTitle?: string };
-export type RenameSessionResponse = ChatSession;
-export type DeleteSessionRequest = { sessionId: string };
-export type DeleteSessionResponse = null;
-export type ListSessionsRequestQuery = { page?: number; size?: number };
-export type ListSessionsResponse = PageResult<ChatSession>;
-export type ListHistoryMessagesRequestQuery = { sessionId: string; page?: number; size?: number };
-export type ListHistoryMessagesResponse = PageResult<MessageResponse>;
+export type CreateSessionApiRequest = { title?: string };
+export type CreateSessionApiResponse = ChatSession;
+export type RenameSessionApiRequest = { sessionId: string; newTitle?: string };
+export type RenameSessionApiResponse = ChatSession;
+export type DeleteSessionApiRequest = { sessionId: string };
+export type DeleteSessionApiResponse = null;
+export type ListSessionsApiRequest = { page?: number; size?: number };
+export type ListSessionsApiResponse = PageResult<ChatSession>;
+export type ListHistoryMessagesApiRequest = { sessionId: string; page?: number; size?: number };
+export type ListHistoryMessagesApiResponse = PageResult<MessageResponse>;

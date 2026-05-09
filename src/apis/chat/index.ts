@@ -1,21 +1,21 @@
 import { apiGet, apiPost } from '@/apis/_runtime/request';
 import type {
-  CreateSessionRequest,
-  CreateSessionResponse,
-  DeleteSessionRequest,
-  DeleteSessionResponse,
-  ListHistoryMessagesRequestQuery,
-  ListHistoryMessagesResponse,
-  ListModelsResponse,
-  ListSessionsRequestQuery,
-  ListSessionsResponse,
-  RenameSessionRequest,
-  RenameSessionResponse,
+  CreateSessionApiRequest,
+  CreateSessionApiResponse,
+  DeleteSessionApiRequest,
+  DeleteSessionApiResponse,
+  ListHistoryMessagesApiRequest,
+  ListHistoryMessagesApiResponse,
+  ListModelsApiResponse,
+  ListSessionsApiRequest,
+  ListSessionsApiResponse,
+  RenameSessionApiRequest,
+  RenameSessionApiResponse,
 } from './index.type';
 
 /** Chat API: /chat/* */
 
-function listModels(): Promise<ListModelsResponse> {
+function listModels(): Promise<ListModelsApiResponse> {
   return apiGet('/chat/model/listModels');
 }
 
@@ -25,11 +25,11 @@ export const ChatApi = {
 
 /** Chat Session API: /chat/session/* */
 
-function createSession(req: CreateSessionRequest): Promise<CreateSessionResponse> {
+function createSession(req: CreateSessionApiRequest): Promise<CreateSessionApiResponse> {
   return apiPost('/chat/session/createSession', req);
 }
 
-function renameSession(req: RenameSessionRequest): Promise<RenameSessionResponse> {
+function renameSession(req: RenameSessionApiRequest): Promise<RenameSessionApiResponse> {
   return apiPost(
     '/chat/session/renameSession',
     { new_title: req.newTitle },
@@ -37,19 +37,19 @@ function renameSession(req: RenameSessionRequest): Promise<RenameSessionResponse
   );
 }
 
-function deleteSession(req: DeleteSessionRequest): Promise<DeleteSessionResponse> {
+function deleteSession(req: DeleteSessionApiRequest): Promise<DeleteSessionApiResponse> {
   return apiPost('/chat/session/deleteSession', undefined, {
     params: { session_id: req.sessionId },
   });
 }
 
-function listSessions(req: ListSessionsRequestQuery): Promise<ListSessionsResponse> {
+function listSessions(req: ListSessionsApiRequest): Promise<ListSessionsApiResponse> {
   return apiGet('/chat/session/listSessions', { params: req });
 }
 
 function listHistoryMessages(
-  req: ListHistoryMessagesRequestQuery
-): Promise<ListHistoryMessagesResponse> {
+  req: ListHistoryMessagesApiRequest
+): Promise<ListHistoryMessagesApiResponse> {
   return apiGet('/chat/session/listHistoryMessages', {
     params: { session_id: req.sessionId, page: req.page, size: req.size },
   });

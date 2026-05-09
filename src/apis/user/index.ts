@@ -1,27 +1,27 @@
 import { apiGet, apiPost, apiPut } from '@/apis/_runtime/request';
 import type {
-  ChangeUserInfoRequest,
-  ChangeUserProfileRequest,
-  CheckEmailVerifyRequest,
-  GetUserInfoResponse,
-  InitiateEmailVerifyRequest,
-  InitiateFudanUISVerifyRequest,
-  ListTransactionsRequest,
-  RedeemVoucherRequest,
-  TransferTokenBetweenGroupAndUserRequest,
+  ChangeUserInfoApiRequest,
+  ChangeUserProfileApiRequest,
+  CheckEmailVerifyApiRequest,
+  GetUserInfoApiResponse,
+  InitiateEmailVerifyApiRequest,
+  InitiateFudanUISVerifyApiRequest,
+  ListTransactionsApiRequest,
+  RedeemVoucherApiRequest,
+  TransferTokenBetweenGroupAndUserApiRequest,
 } from './index.type';
 
 /** User API: /user/* */
 
-function getUserInfo(): Promise<GetUserInfoResponse> {
+function getUserInfo(): Promise<GetUserInfoApiResponse> {
   return apiGet('/user/getUserInfo');
 }
 
-function initiateEmailVerify(req: InitiateEmailVerifyRequest): Promise<void> {
+function initiateEmailVerify(req: InitiateEmailVerifyApiRequest): Promise<void> {
   return apiPost('/user/verify/initiateEmailVerify', null, { params: req });
 }
 
-function initiateFudanUISVerify(req: InitiateFudanUISVerifyRequest): Promise<void> {
+function initiateFudanUISVerify(req: InitiateFudanUISVerifyApiRequest): Promise<void> {
   return apiPost('/user/verify/initiateFudanUISVerify', null, { params: req });
 }
 
@@ -29,15 +29,15 @@ function checkFudanUISVerify(): Promise<unknown> {
   return apiGet('/user/verify/checkFudanUISVerify');
 }
 
-function checkEmailVerify(req: CheckEmailVerifyRequest): Promise<void> {
+function checkEmailVerify(req: CheckEmailVerifyApiRequest): Promise<void> {
   return apiGet('/user/verify/checkEmailVerify', { params: req });
 }
 
-function changeUserInfo(req: ChangeUserInfoRequest): Promise<unknown> {
+function changeUserInfo(req: ChangeUserInfoApiRequest): Promise<unknown> {
   return apiPut('/user/changeUserInfo', req);
 }
 
-function changeUserProfile(req: ChangeUserProfileRequest): Promise<unknown> {
+function changeUserProfile(req: ChangeUserProfileApiRequest): Promise<unknown> {
   return apiPut('/user/changeUserProfile', req);
 }
 
@@ -57,16 +57,16 @@ function getUserWalletInfo(): Promise<Record<string, unknown>> {
   return apiGet('/user/wallet/getUserWalletInfo');
 }
 
-function redeemVoucher(req: RedeemVoucherRequest): Promise<void> {
+function redeemVoucher(req: RedeemVoucherApiRequest): Promise<void> {
   return apiPost('/user/wallet/redeemVoucher', req);
 }
 
-function listTransactions(req: ListTransactionsRequest): Promise<Record<string, unknown>> {
+function listTransactions(req: ListTransactionsApiRequest): Promise<Record<string, unknown>> {
   return apiGet('/user/wallet/listTransactions', { params: req });
 }
 
 function transferTokenBetweenGroupAndUser(
-  req: TransferTokenBetweenGroupAndUserRequest
+  req: TransferTokenBetweenGroupAndUserApiRequest
 ): Promise<void> {
   return apiPost('/user/wallet/transferTokenBetweenGroupAndUser', req);
 }

@@ -1,24 +1,24 @@
-export interface LoginRequest {
+export interface LoginApiRequest {
   account: string;
   password: string;
 }
 
-export interface RegisterRequest {
+export interface RegisterApiRequest {
   username: string;
   password: string;
 }
 
-export interface ResetPasswordRequest {
+export interface ResetPasswordApiRequest {
   campusNum: string;
 }
 
-export interface NewPasswordRequest {
+export interface NewPasswordApiRequest {
   newPassword: string;
   token: string;
 }
 
-export type LoginResponse = void;
-export type LogoutResponse = void;
-export type RegisterResponse = void;
-export type ResetPasswordResponse = void;
-export type NewPasswordResponse = void;
+export type LoginApiResponse = void;
+export type LogoutApiResponse = void;
+export type RegisterApiResponse = void;
+export type ResetPasswordApiResponse = void;
+export type NewPasswordApiResponse = void;

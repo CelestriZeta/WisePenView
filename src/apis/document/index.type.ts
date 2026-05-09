@@ -1,14 +1,14 @@
 import type { ResourceItem } from '@/types/resource';
 import type { DocumentResourceType } from '@/constants/document';
 
-export interface UploadDocRequest {
+export interface UploadDocApiRequest {
   filename: string;
   extension: string;
   md5: string;
   expectedSize: number;
 }
 
-export interface UploadDocResponse {
+export interface UploadDocApiResponse {
   documentId: string;
   putUrl: string | null;
   callbackHeader: string | null;
@@ -16,11 +16,11 @@ export interface UploadDocResponse {
   flashUploaded: boolean;
 }
 
-export interface DocumentIdRequest {
+export interface DocumentIdApiRequest {
   documentId: string;
 }
 
-export interface GetDocInfoRequest {
+export interface GetDocInfoApiRequest {
   resourceId: string;
 }
 
@@ -41,13 +41,13 @@ export interface DocMetaInfo {
   maxPreviewPages: number | null;
 }
 
-export interface PendingDocItem extends DocMetaInfo {
+export interface PendingDocItemApiResponse extends DocMetaInfo {
   documentId?: string;
 }
 
-export type ListPendingDocsResponse = PendingDocItem[];
+export type ListPendingDocsApiResponse = PendingDocItemApiResponse[];
 
-export interface GetDocInfoResponse {
+export interface GetDocInfoApiResponse {
   docMetaInfo: DocMetaInfo;
   resourceInfo: ResourceItem;
 }

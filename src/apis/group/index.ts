@@ -1,55 +1,55 @@
 import { apiGet, apiPost } from '@/apis/_runtime/request';
 import type {
-  AddGroupRequest,
-  AddGroupResponse,
-  ChangeGroupConfigRequest,
-  ChangeGroupRequest,
-  ChangeRoleRequest,
-  ChangeTokenLimitRequest,
-  FetchGroupMembersResponse,
-  GetAllMyGroupTokenInfoRequest,
-  GetGroupBaseInfoResponse,
-  GetGroupConfigRequest,
-  GetGroupConfigResponse,
-  GetGroupInfoRequest,
-  GetGroupInfoResponse,
-  GetGroupTokenRequest,
-  GroupRoleResponse,
-  JoinGroupRequest,
-  KickMemberRequest,
-  ListMemberRequest,
-  ListGroupRequest,
-  ListGroupResponse,
-  QuitGroupRequest,
-  RemoveGroupRequest,
+  AddGroupApiRequest,
+  AddGroupApiResponse,
+  ChangeGroupApiRequest,
+  ChangeGroupConfigApiRequest,
+  ChangeRoleApiRequest,
+  ChangeTokenLimitApiRequest,
+  FetchGroupMembersApiResponse,
+  GetAllMyGroupTokenInfoApiRequest,
+  GetGroupBaseInfoApiResponse,
+  GetGroupConfigApiRequest,
+  GetGroupConfigApiResponse,
+  GetGroupInfoApiRequest,
+  GetGroupInfoApiResponse,
+  GetGroupTokenApiRequest,
+  GroupRoleApiResponse,
+  JoinGroupApiRequest,
+  KickMemberApiRequest,
+  ListMemberApiRequest,
+  ListGroupApiRequest,
+  ListGroupApiResponse,
+  QuitGroupApiRequest,
+  RemoveGroupApiRequest,
 } from './index.type';
 
 /** Group API: /group/* */
-function listGroups(req: ListGroupRequest): Promise<ListGroupResponse> {
+function listGroups(req: ListGroupApiRequest): Promise<ListGroupApiResponse> {
   return apiGet('/group/list', { params: req });
 }
 
-function getGroupDetailInfo(req: GetGroupInfoRequest): Promise<GetGroupInfoResponse> {
+function getGroupDetailInfo(req: GetGroupInfoApiRequest): Promise<GetGroupInfoApiResponse> {
   return apiGet('/group/getGroupDetailInfo', { params: req });
 }
 
-function getGroupBaseInfo(req: GetGroupInfoRequest): Promise<GetGroupBaseInfoResponse> {
+function getGroupBaseInfo(req: GetGroupInfoApiRequest): Promise<GetGroupBaseInfoApiResponse> {
   return apiGet('/group/getGroupBaseInfo', { params: req });
 }
 
-function addGroup(req: AddGroupRequest): Promise<AddGroupResponse> {
+function addGroup(req: AddGroupApiRequest): Promise<AddGroupApiResponse> {
   return apiPost('/group/addGroup', req);
 }
 
-function changeGroup(req: ChangeGroupRequest): Promise<void> {
+function changeGroup(req: ChangeGroupApiRequest): Promise<void> {
   return apiPost('/group/changeGroup', req);
 }
 
-function removeGroup(req: RemoveGroupRequest): Promise<void> {
+function removeGroup(req: RemoveGroupApiRequest): Promise<void> {
   return apiPost('/group/removeGroup', req);
 }
 
-function joinGroup(req: JoinGroupRequest): Promise<void> {
+function joinGroup(req: JoinGroupApiRequest): Promise<void> {
   return apiPost('/group/joinGroup', req);
 }
 
@@ -65,11 +65,11 @@ export const GroupApi = {
 
 /** Group Config API: /resource/groupConfig/* */
 
-function getConfig(req: GetGroupConfigRequest): Promise<GetGroupConfigResponse> {
+function getConfig(req: GetGroupConfigApiRequest): Promise<GetGroupConfigApiResponse> {
   return apiGet('/resource/groupConfig/getConfig', { params: req });
 }
 
-function changeConfig(req: ChangeGroupConfigRequest): Promise<void> {
+function changeConfig(req: ChangeGroupConfigApiRequest): Promise<void> {
   return apiPost('/resource/groupConfig/changeConfig', req);
 }
 
@@ -80,38 +80,38 @@ export const GroupResConfigApi = {
 
 /** Group Member API: /group/member/* */
 
-function listMembers(req: ListMemberRequest): Promise<FetchGroupMembersResponse> {
+function listMembers(req: ListMemberApiRequest): Promise<FetchGroupMembersApiResponse> {
   return apiGet('/group/member/list', { params: req });
 }
 
-function getMyRole(groupId: string): Promise<number | GroupRoleResponse> {
+function getMyRole(groupId: string): Promise<number | GroupRoleApiResponse> {
   return apiGet('/group/member/getMyRole', { params: { groupId } });
 }
 
-function quit(req: QuitGroupRequest): Promise<void> {
+function quit(req: QuitGroupApiRequest): Promise<void> {
   return apiPost('/group/member/quit', req);
 }
 
-function changeRole(req: ChangeRoleRequest): Promise<void> {
+function changeRole(req: ChangeRoleApiRequest): Promise<void> {
   return apiPost('/group/member/changeRole', req);
 }
 
-function kick(req: KickMemberRequest): Promise<void> {
+function kick(req: KickMemberApiRequest): Promise<void> {
   return apiPost('/group/member/kick', req);
 }
 
 function getGroupToken(
-  req: GetGroupTokenRequest
+  req: GetGroupTokenApiRequest
 ): Promise<{ TokenUsed?: number; TokenLimit?: number }> {
   return apiGet('/group/member/getGroupToken', { params: req });
 }
 
-function changeTokenLimit(req: ChangeTokenLimitRequest): Promise<void> {
+function changeTokenLimit(req: ChangeTokenLimitApiRequest): Promise<void> {
   return apiPost('/group/member/changeTokenLimit', req);
 }
 
 function getAllMyGroupTokenInfo(
-  req: GetAllMyGroupTokenInfoRequest
+  req: GetAllMyGroupTokenInfoApiRequest
 ): Promise<Record<string, unknown>> {
   return apiGet('/group/member/getAllMyGroupTokenInfo', { params: req });
 }
