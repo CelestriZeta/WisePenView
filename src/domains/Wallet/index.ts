@@ -2,11 +2,11 @@
 export type { GroupQuotaInfo, UserGroupQuota } from './entity/quota';
 export type { WalletTransactionKind, WalletTransactionRecord } from './entity/wallet';
 export type {
-  IWalletService,
   GetWalletInfoResponse,
-  RedeemVoucherRequest,
-  TransferTokenBetweenGroupAndUserRequest,
+  IWalletService,
+  ListMergedWalletTransactionsRequest,
   ListWalletTransactionsRequest,
   ListWalletTransactionsResponse,
-  ListMergedWalletTransactionsRequest,
+  RedeemVoucherRequest,
+  TransferTokenBetweenGroupAndUserRequest,
 } from './service/index.type';

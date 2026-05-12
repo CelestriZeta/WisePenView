@@ -1,4 +1,4 @@
-import type { UserGroupQuota, GroupQuotaInfo } from '@/domains/Wallet';
+import type { GroupQuotaInfo, UserGroupQuota } from '@/domains/Wallet';
 
 /** QuotaService 接口：供依赖注入使用 */
 export interface IQuotaService {

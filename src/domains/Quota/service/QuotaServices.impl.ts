@@ -1,9 +1,7 @@
+import type { GroupQuotaInfo, UserGroupQuota } from '@/domains/Wallet';
 import { normalizeId } from '@/utils/normalize/normalizeId';
 import { GroupMemberApi } from '../apis/GroupApi';
-import type { UserGroupQuota } from '@/domains/Wallet';
-import type { GroupQuotaInfo } from '@/domains/Wallet';
-import type { SetGroupQuotaRequest } from './index.type';
-import type { IQuotaService } from './index.type';
+import type { IQuotaService, SetGroupQuotaRequest } from './index.type';
 
 const toNum = (v: unknown, fallback = 0): number => {
   const n = Number(v);
