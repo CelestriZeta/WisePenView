@@ -7,7 +7,7 @@ const AuthLayout: React.FC = () => {
   return (
     <Layout className={styles.root}>
       <Flex className={styles.authSheet}>
-        <img src={loginImage} className={styles.loginImage} />
+        <img src={loginImage} className={styles.loginImage} alt="" />
         <Flex className={styles.formSection}>
           <Outlet />
         </Flex>
