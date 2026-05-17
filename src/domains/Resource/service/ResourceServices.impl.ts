@@ -1,7 +1,7 @@
 import { ResourceItemApi } from '../apis/ResourceApi';
 import type { ListResourceItemsApiRequest } from '../apis/ResourceApi.type';
 import { TAG_QUERY_LOGIC_MODE } from '../enum';
-import { ResourceServicesMap } from '../mapper/ResourceServices.map';
+import { normalizeResourceItem } from '../normalize/normalizeResourceItem';
 import type {
   GetGroupResourceRequest,
   GetUserResourcesRequest,
@@ -30,8 +30,9 @@ const requestResourceItemList = async (
     query.tagIds = params.tagIds;
   }
   const d = await ResourceItemApi.listResources(query);
+  // readCount/likeCount 后端以字符串返回（Java Long），归一化为 number
   return {
-    list: (d?.list ?? []).map(ResourceServicesMap.mapResourceItemFromApi),
+    list: (d?.list ?? []).map(normalizeResourceItem),
     total: d?.total ?? 0,
     page: d?.page ?? params.page,
     size: d?.size ?? params.size,
