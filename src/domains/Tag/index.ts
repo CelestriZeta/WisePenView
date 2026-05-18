@@ -4,6 +4,12 @@ export {
   TAG_RESOURCE_ACTION,
   TAG_RESOURCE_MOUNT_MODE,
   TAG_VISIBILITY_MODE,
+  actionsToPermissionCode,
+  getResourceActionImpliedActions,
+  getResourceActionImpliedMask,
+  hasResourceAction,
+  normalizeResourceActions,
+  permissionCodeToActions,
 } from './enum';
 export type {
   TagAclGrantMode,
@@ -12,14 +18,6 @@ export type {
   TagVisibilityMode,
   TagVisibilityModeString,
 } from './enum';
-export {
-  actionsToPermissionCode,
-  getResourceActionImpliedActions,
-  getResourceActionImpliedMask,
-  hasResourceAction,
-  normalizeResourceActions,
-  permissionCodeToActions,
-} from './service/index.type';
 export type {
   GetResByTagRequest,
   ITagService,
