@@ -1,5 +1,5 @@
-import { ROOT_DISPLAY } from '@/components/Drive/TreeNav/folderUtil';
-import { useFolderService, useTagService } from '@/domains';
+import { ROOT_DISPLAY } from '@/components/Drive/common/constants';
+import { useTagService } from '@/domains';
 import type { TagTreeNode } from '@/domains/Tag/service/index.type';
 import React, { useMemo } from 'react';
 import type { ReadOnlyBreadcrumbProps } from './index.type';
@@ -14,7 +14,6 @@ const getDisplayName = (node: TagTreeNode, mode: 'folder' | 'tag'): string => {
 };
 
 function ReadOnlyBreadcrumb({ node, mode, groupId }: ReadOnlyBreadcrumbProps) {
-  const folderService = useFolderService();
   const tagService = useTagService();
 
   const breadcrumbPath = useMemo(() => {
@@ -28,12 +27,12 @@ function ReadOnlyBreadcrumb({ node, mode, groupId }: ReadOnlyBreadcrumbProps) {
       if (!current.parentId) break;
       current =
         mode === 'folder'
-          ? (folderService.getFolderById(current.parentId, groupId) as TagTreeNode | undefined)
+          ? tagService.getRawTagById(current.parentId, groupId)
           : tagService.getTagById(current.parentId, groupId);
     }
 
     return path;
-  }, [node, mode, groupId, folderService, tagService]);
+  }, [node, mode, groupId, tagService]);
 
   if (breadcrumbPath.length === 0) return null;
 

@@ -1,43 +1,23 @@
 import type { ResourceItem } from '@/domains/Resource';
-import { RESOURCE_TYPE } from '@/domains/Resource/enum';
-import { usePdfPreviewProgressStore, useRecentFilesStore } from '@/store';
 import { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigateResource } from './useNavigateResource';
+
+export interface UseClickFileParams {
+  /** 点击发起方所在的 Drive scope（undefined 表示个人云盘） */
+  groupId?: string;
+}
 
 /**
- * 根据资源类型：NOTE 跳转笔记编辑器，其他类型跳转站内 PDF 预览（/app/pdf/:resourceId）
- * 点击文件会加入最近使用列表。
+ * 列表点击文件的统一入口：按 resourceType 路由到笔记编辑器或 PDF 预览。
  */
-export const useClickFile = () => {
-  const navigate = useNavigate();
-  const addFile = useRecentFilesStore((s) => s.addFile);
+export const useClickFile = (params?: UseClickFileParams) => {
+  const navigateResource = useNavigateResource(params?.groupId);
 
-  const openResource = useCallback(
+  return useCallback(
     (item: ResourceItem) => {
-      const { resourceId, resourceName, ownerInfo, resourceType } = item;
-      if (resourceId == null || resourceId === '') return;
-      addFile({
-        resourceId,
-        resourceName: resourceName ?? '',
-        ownerInfo,
-        resourceType,
-      });
-      if (resourceType === RESOURCE_TYPE.NOTE) {
-        navigate(`/app/note/${resourceId}`);
-      } else {
-        // 尝试恢复上次的阅读状态
-        const progress = usePdfPreviewProgressStore.getState().progressByResourceId[resourceId];
-        const qs = new URLSearchParams();
-        if (progress != null) {
-          qs.set('page', String(progress.page));
-          qs.set('zoom', progress.zoom);
-        }
-        const basePath = `/app/pdf/${encodeURIComponent(resourceId)}`;
-        navigate(qs.size > 0 ? `${basePath}?${qs.toString()}` : basePath);
-      }
+      if (!item.resourceId) return;
+      navigateResource(item.resourceId, item.resourceType);
     },
-    [navigate, addFile]
+    [navigateResource]
   );
-
-  return openResource;
 };
