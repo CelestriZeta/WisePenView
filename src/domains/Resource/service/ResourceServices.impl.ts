@@ -1,8 +1,8 @@
+import { normalizeResourceItem } from '@/utils/normalize/normalizeResourceItem';
 import { ResourceInteractApi } from '../apis/InteractApi';
 import { ResourceItemApi } from '../apis/ResourceApi';
 import type { ListResourceItemsApiRequest } from '../apis/ResourceApi.type';
 import { TAG_QUERY_LOGIC_MODE } from '../enum';
-import { normalizeResourceItem } from '../normalize/normalizeResourceItem';
 import type {
   GetGroupResourceRequest,
   GetUserResourcesRequest,

@@ -1,7 +1,7 @@
 import type { NoteInfoResponse } from '@/domains/Note';
-import { normalizeResourceItem } from '@/domains/Resource/normalize/normalizeResourceItem';
 import { useNewNoteStore, useNoteSelectionStore, usePdfPreviewProgressStore } from '@/store';
 import { formatTimestampToDateTime } from '@/utils/format/formatTime';
+import { normalizeResourceItem } from '@/utils/normalize/normalizeResourceItem';
 import { NoteApi } from '../apis/NoteApi';
 import { ResourceItemApi } from '../apis/ResourceApi';
 import type {

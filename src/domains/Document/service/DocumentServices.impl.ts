@@ -1,4 +1,4 @@
-import { normalizeResourceItem } from '@/domains/Resource/normalize/normalizeResourceItem';
+import { normalizeResourceItem } from '@/utils/normalize/normalizeResourceItem';
 import { computeFileMd5 } from '@/utils/oss/computeFileMd5';
 import { putOssPresignedUrl } from '@/utils/oss/ossPresignedPut';
 import { parseExtension } from '@/utils/parser/extensionParser';
