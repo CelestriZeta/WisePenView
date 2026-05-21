@@ -5,7 +5,7 @@ import { useCreateBlockNote } from '@blocknote/react';
 import { useMount, useUnmount, useUpdateEffect } from 'ahooks';
 import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react';
 
-import { useImageService } from '@/domains';
+import { useChatService, useImageService } from '@/domains';
 import { assertImageProxyUploadLimit } from '@/domains/Image';
 import { useAppMessage } from '@/hooks/useAppMessage';
 import {
@@ -54,8 +54,10 @@ const CustomBlockNote = forwardRef<NoteBodyEditorHandle, CustomBlockNoteProps>(
     ref
   ) => {
     const imageService = useImageService();
+    const chatService = useChatService();
     const message = useAppMessage();
     const currentSessionId = useCurrentChatSessionStore((state) => state.currentSessionId);
+    const setCurrentSession = useCurrentChatSessionStore((state) => state.setCurrentSession);
     const setChatPanelCollapsed = useChatPanelStore((state) => state.setChatPanelCollapsed);
     const setSelectedText = useNoteSelectionStore((state) => state.setSelectedText);
     const setEnableSelectedText = useNoteSelectionStore((state) => state.setEnableSelectedText);
@@ -237,22 +239,37 @@ const CustomBlockNote = forwardRef<NoteBodyEditorHandle, CustomBlockNoteProps>(
       syncActiveHeading();
     }, [syncActiveHeading, syncSelectedText]);
 
-    const handleAskAi = useCallback(() => {
-      if (!currentSessionId) {
-        return;
-      }
+    const handleAskAi = useCallback(async () => {
+      let targetSessionId = currentSessionId;
       const selectedSnapshot = editor.getSelectedText().trim() || selectedText.trim();
       if (!selectedSnapshot) {
+        message.info('请先选中一段文字再问 AI');
         return;
       }
-      setSelectedText(currentSessionId, selectedSnapshot);
-      setEnableSelectedText(currentSessionId, true);
+
+      if (!targetSessionId) {
+        try {
+          const createdSession = await chatService.createSession();
+          targetSessionId = createdSession.id;
+          setCurrentSession({ id: createdSession.id, title: createdSession.title });
+        } catch (error) {
+          const text = error instanceof Error ? error.message : '新建聊天失败';
+          message.error(text);
+          return;
+        }
+      }
+
+      setSelectedText(targetSessionId, selectedSnapshot);
+      setEnableSelectedText(targetSessionId, true);
       setChatPanelCollapsed(false);
     }, [
+      chatService,
       currentSessionId,
       editor,
+      message,
       selectedText,
       setChatPanelCollapsed,
+      setCurrentSession,
       setEnableSelectedText,
       setSelectedText,
     ]);

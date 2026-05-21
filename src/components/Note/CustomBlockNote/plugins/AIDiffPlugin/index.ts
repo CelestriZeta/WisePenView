@@ -4,18 +4,20 @@ import type { Transaction } from '@tiptap/pm/state';
 import { NodeSelection, Plugin, PluginKey, TextSelection } from '@tiptap/pm/state';
 import type { EditorProps, EditorView } from '@tiptap/pm/view';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
+import { createElement } from 'react';
+import { RiSparklingLine } from 'react-icons/ri';
 
 import { AI_DIFF_DISPLAY_MODE, type AiDiffDisplayMode } from '@/domains/Note/enum';
 import { getAiDiffDisplayModeSnapshot, useAiDiffDisplayStore } from '@/store/useAiDiffDisplayStore';
 import type { NoteEditorPlugin } from '../types';
 import {
-  aiActionsInlineContentSpec,
   aiAddInlineContentSpec,
   aiDeleteInlineContentSpec,
   aiDiffInlineContentSpec,
 } from './inlineContentSpecs';
+import { aiGeneratedBlocksToBlockNoteBlocks } from './patch';
 
-const aiDiffBlockFoldPluginKey = new PluginKey('wisePenAiDiffBlockFold');
+const aiDiffBlockFoldPluginKey = new PluginKey('AIDiffBlockFold');
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null;
@@ -63,9 +65,6 @@ function isInlineVisibleInMode(item: unknown, displayMode: AiDiffDisplayMode): b
   if (type === 'text') {
     return getInlineText(item).trim() !== '';
   }
-  if (type === 'ai-actions') {
-    return false;
-  }
   if (type === 'ai-add') {
     const text = getPropString(getInlineProps(item), 'text');
     if (!text) return false;
@@ -95,14 +94,14 @@ function isInlineVisibleInMode(item: unknown, displayMode: AiDiffDisplayMode): b
     return displayMode !== AI_DIFF_DISPLAY_MODE.NEW_ONLY;
   }
   if (type === 'AI-Edit') {
-    const origin = getInlineFieldString(item, 'old_text') || getInlineFieldString(item, 'text_old');
-    const replace =
-      getInlineFieldString(item, 'new_text') || getInlineFieldString(item, 'text_new');
+    const origin = getInlineFieldString(item, 'old_text');
+    const replace = getInlineFieldString(item, 'new_text');
     if (displayMode === AI_DIFF_DISPLAY_MODE.OLD_ONLY) return origin !== '';
     if (displayMode === AI_DIFF_DISPLAY_MODE.NEW_ONLY) return replace !== '';
     return origin !== '' || replace !== '';
   }
 
+  // 其它未知情况保守认为可见
   return true;
 }
 
@@ -113,7 +112,6 @@ function hasAnyAiInline(content: readonly unknown[]): boolean {
       type === 'ai-diff' ||
       type === 'ai-add' ||
       type === 'ai-delete' ||
-      type === 'ai-actions' ||
       type === 'AI-Create' ||
       type === 'AI-Delete' ||
       type === 'AI-Edit'
@@ -131,6 +129,8 @@ function shouldFoldInlineContent(
   return !content.some((item) => isInlineVisibleInMode(item, displayMode));
 }
 
+// 针对于toggleListItem 如果包含子块且所有子块都折叠，容易“无法添加新子块”
+// 返回第一个子块的id，作为新增子块的锚点
 function resolveAllChildrenFoldedAnchorId(
   children: unknown,
   displayMode: AiDiffDisplayMode
@@ -165,6 +165,7 @@ function buildAiDiffHiddenBlockDecorations(params: {
   proseMirrorSchema: unknown;
 }): DecorationSet {
   const { doc, editorSchema, displayMode, proseMirrorSchema } = params;
+  // 新旧对比模式下无需折叠
   if (displayMode === AI_DIFF_DISPLAY_MODE.COMPARE) {
     return DecorationSet.empty;
   }
@@ -227,13 +228,15 @@ function buildAiDiffHiddenBlockDecorations(params: {
   return DecorationSet.create(doc, decorations);
 }
 
+// 创建折叠extension
 const aiDiffBlockFoldExtension = createExtension(({ editor }) => {
   return {
-    key: 'wisePenAiDiffBlockFold',
+    key: 'AIDiffBlockFold',
     prosemirrorPlugins: [
       new Plugin({
         key: aiDiffBlockFoldPluginKey,
         state: {
+          // 初始化插件状态
           init: (_config, state) => {
             const displayMode = getAiDiffDisplayModeSnapshot();
             return {
@@ -250,6 +253,7 @@ const aiDiffBlockFoldExtension = createExtension(({ editor }) => {
               }),
             };
           },
+          // 运行时更新插件状态
           apply: (tr, value, _oldState, newState) => {
             const meta = tr.getMeta(aiDiffBlockFoldPluginKey) as
               | { displayMode?: AiDiffDisplayMode }
@@ -274,24 +278,32 @@ const aiDiffBlockFoldExtension = createExtension(({ editor }) => {
           },
         },
         props: {
+          // 应当应用的装饰
           decorations: (state) => {
             const pluginState = aiDiffBlockFoldPluginKey.getState(state) as
               | { decorations: DecorationSet }
               | undefined;
             return pluginState?.decorations ?? null;
           },
+          // 拦截“点击添加区块”按钮的点击事件
           handleClick: (view, _pos, event) => {
+            // 仅处理鼠标左键点击事件
             if (!(event instanceof MouseEvent)) return false;
             if (event.button !== 0) return false;
+
             const target = event.target;
             if (!(target instanceof HTMLElement)) return false;
 
+            // 读取displayMode
             const pluginState = aiDiffBlockFoldPluginKey.getState(view.state) as
               | { displayMode: AiDiffDisplayMode }
               | undefined;
+
+            // “新旧对比”时不起作用
             const displayMode = pluginState?.displayMode ?? AI_DIFF_DISPLAY_MODE.COMPARE;
             if (displayMode === AI_DIFF_DISPLAY_MODE.COMPARE) return false;
 
+            // 寻找占位按钮节点
             const placeholder = target.closest('[data-ai-diff-toggle-add-placeholder="true"]');
             if (!(placeholder instanceof HTMLElement)) return false;
             const anchorChildId =
@@ -309,6 +321,7 @@ const aiDiffBlockFoldExtension = createExtension(({ editor }) => {
               focus: () => void;
             };
 
+            // 在文档块树中查找 anchorChildId 对应的 block，作为插入参照点
             let refBlock: unknown | null = null;
             ed.forEachBlock?.((b) => {
               if (isRecord(b) && b['id'] === anchorChildId) {
@@ -321,6 +334,8 @@ const aiDiffBlockFoldExtension = createExtension(({ editor }) => {
 
             event.preventDefault();
             event.stopPropagation();
+
+            // 插入空 paragraph作为子块
             try {
               const inserted = ed.insertBlocks([{ type: 'paragraph' }], refBlock, 'before');
               const firstInserted = inserted?.[0];
@@ -328,14 +343,20 @@ const aiDiffBlockFoldExtension = createExtension(({ editor }) => {
                 ed.setTextCursorPosition(firstInserted['id'] as string, 'start');
               }
             } catch {
+              // 插入失败静默处理
               void 0;
             }
+            // 聚焦编辑器，便于用户直接开始输入
             ed.focus();
+
             return true;
           },
         },
         view: (view) => {
+          // 记录上一次 displayMode
           let lastMode = getAiDiffDisplayModeSnapshot();
+          // 订阅全局显示模式 store：一旦模式变化，派发 transaction 通知 ProseMirror 插件重算 decorations
+          // store.subscribe函数返回一个取消订阅的函数，用于销毁时取消订阅
           const unsubscribe = useAiDiffDisplayStore.subscribe((s) => {
             const nextMode = s.displayMode ?? AI_DIFF_DISPLAY_MODE.COMPARE;
             if (nextMode === lastMode) return;
@@ -343,6 +364,7 @@ const aiDiffBlockFoldExtension = createExtension(({ editor }) => {
             view.dispatch(
               view.state.tr
                 .setMeta(aiDiffBlockFoldPluginKey, { displayMode: nextMode })
+                // UI 模式切换不进入撤销栈，避免 Undo/Redo 污染
                 .setMeta('addToHistory', false)
             );
           });
@@ -357,6 +379,7 @@ const aiDiffBlockFoldExtension = createExtension(({ editor }) => {
   };
 });
 
+// 不依赖store，prop驱动更新displaymode
 export function syncAiDiffBlockFoldDisplayMode(
   view: EditorView,
   displayMode: AiDiffDisplayMode
@@ -366,98 +389,124 @@ export function syncAiDiffBlockFoldDisplayMode(
   );
 }
 
-function getNodeKey(node: PMNode): string {
-  const attrs = node.attrs as unknown;
-  if (typeof attrs !== 'object' || attrs === null) return '';
-  const key = (attrs as Record<string, unknown>)['key'];
-  return typeof key === 'string' ? key : '';
+function isAiDiffChangeNodeName(name: string): boolean {
+  return name === 'ai-diff' || name === 'ai-add' || name === 'ai-delete';
 }
 
-type AIDiffNodeName = 'ai-actions' | 'ai-diff' | 'ai-add' | 'ai-delete';
-
-function isAIDiffNodeName(name: string): name is AIDiffNodeName {
-  return name === 'ai-actions' || name === 'ai-diff' || name === 'ai-add' || name === 'ai-delete';
+function isBlockContainerEffectivelyEmpty(node: PMNode): boolean {
+  let hasVisible = false;
+  node.descendants((child) => {
+    if (child.isText) {
+      if ((child.text ?? '').trim() !== '') {
+        hasVisible = true;
+        return false;
+      }
+      return true;
+    }
+    if (child.isInline) {
+      hasVisible = true;
+      return false;
+    }
+    return true;
+  });
+  return !hasVisible;
 }
 
-function buildDeleteRanges(params: {
-  actionFrom: number;
-  actionTo: number;
-  actionKey: string;
-  beforeNode: PMNode | null;
-  afterNode: PMNode | null;
-}): Array<{ from: number; to: number }> {
-  const { actionFrom, actionTo, actionKey, beforeNode, afterNode } = params;
-  const ranges: Array<{ from: number; to: number }> = [{ from: actionFrom, to: actionTo }];
-
-  const matchBefore =
-    beforeNode &&
-    isAIDiffNodeName(beforeNode.type.name) &&
-    beforeNode.type.name !== 'ai-actions' &&
-    getNodeKey(beforeNode) === actionKey;
-  if (matchBefore) {
-    ranges.push({ from: actionFrom - beforeNode.nodeSize, to: actionFrom });
-    return ranges;
-  }
-
-  const matchAfter =
-    afterNode &&
-    isAIDiffNodeName(afterNode.type.name) &&
-    afterNode.type.name !== 'ai-actions' &&
-    getNodeKey(afterNode) === actionKey;
-  if (matchAfter) {
-    ranges.push({ from: actionTo, to: actionTo + afterNode.nodeSize });
-  }
-  return ranges;
+function blockContainerHasNestedChildren(node: PMNode): boolean {
+  let hasNested = false;
+  node.descendants((child) => {
+    if (child.type.name === 'blockContainer') {
+      hasNested = true;
+      return false;
+    }
+    return true;
+  });
+  return hasNested;
 }
 
-function buildDeleteRangesForChange(params: {
-  changeFrom: number;
-  changeTo: number;
-  changeKey: string;
-  beforeNode: PMNode | null;
-  afterNode: PMNode | null;
-}): Array<{ from: number; to: number }> | null {
-  const { changeFrom, changeTo, changeKey, beforeNode, afterNode } = params;
-  const ranges: Array<{ from: number; to: number }> = [{ from: changeFrom, to: changeTo }];
-
-  const matchAfter =
-    afterNode && afterNode.type.name === 'ai-actions' && getNodeKey(afterNode) === changeKey;
-  if (matchAfter) {
-    ranges.push({ from: changeTo, to: changeTo + afterNode.nodeSize });
-    return ranges;
+function findClosestBlockContainerAt(
+  doc: PMNode,
+  pos: number
+): { from: number; to: number; node: PMNode } | null {
+  const safePos = Math.min(Math.max(pos, 0), doc.content.size);
+  const $pos = doc.resolve(safePos);
+  for (let d = $pos.depth; d > 0; d -= 1) {
+    const node = $pos.node(d);
+    if (node.type.name === 'blockContainer') {
+      return { from: $pos.before(d), to: $pos.after(d), node };
+    }
   }
-
-  const matchBefore =
-    beforeNode && beforeNode.type.name === 'ai-actions' && getNodeKey(beforeNode) === changeKey;
-  if (matchBefore) {
-    ranges.push({ from: changeFrom - beforeNode.nodeSize, to: changeFrom });
-    return ranges;
-  }
-
   return null;
 }
 
-function deleteRanges(view: EditorView, ranges: Array<{ from: number; to: number }>): void {
+function deleteRangesAndMaybeRemoveEmptyBlock(params: {
+  view: EditorView;
+  ranges: Array<{ from: number; to: number }>;
+  probePos: number;
+}): void {
+  const { view, ranges, probePos } = params;
   const sorted = [...ranges].sort((a, b) => b.from - a.from);
   let tr: Transaction = view.state.tr;
   for (const r of sorted) {
     tr = tr.delete(r.from, r.to);
   }
+  const mappedProbePos = tr.mapping.map(probePos, -1);
+  const blockContainer = findClosestBlockContainerAt(tr.doc as unknown as PMNode, mappedProbePos);
+  if (
+    blockContainer &&
+    !blockContainerHasNestedChildren(blockContainer.node) &&
+    isBlockContainerEffectivelyEmpty(blockContainer.node)
+  ) {
+    tr = tr.delete(blockContainer.from, blockContainer.to);
+  }
   view.dispatch(tr);
 }
 
+function createMockAskAiSlashMenuItem(editor: unknown) {
+  return {
+    title: '问AI',
+    group: 'AI',
+    aliases: ['ai', 'ask', 'askai', '问', '问ai', 'ai-diff', 'diff'],
+    subtext: 'Mock：用 AIDiff.mock.ts 数据模拟 AI 修改笔记内容',
+    icon: createElement(RiSparklingLine, { size: 18 }),
+    onItemClick: () => {
+      if (import.meta.env.MODE !== 'mock') {
+        return;
+      }
+      void (async () => {
+        const mod = await import('@/domains/Note/mock/AIDiff.mock');
+        const mapped = aiGeneratedBlocksToBlockNoteBlocks(mod.MOCK_AI_BLOCKS);
+        if (!mapped) return;
+        const ed = editor as unknown as {
+          document?: unknown;
+          replaceBlocks?: (blocks: unknown, newBlocks: unknown) => unknown;
+          focus?: () => void;
+        };
+        const doc = ed.document;
+        if (typeof ed.replaceBlocks === 'function' && Array.isArray(doc)) {
+          ed.replaceBlocks(doc, mapped);
+          ed.focus?.();
+        }
+      })();
+    },
+  };
+}
+
+// AIDiff 插件本体：向编辑器系统注册（inline specs + extension + editorProps）
 export const aiDiffPlugin = {
   id: 'ai-diff',
+  // 注册四种行内内容 spec（渲染/导出逻辑在 inlineContentSpecs/inlineContentViews 中）
   inlineContentSpecs: {
     'ai-diff': aiDiffInlineContentSpec,
     'ai-add': aiAddInlineContentSpec,
     'ai-delete': aiDeleteInlineContentSpec,
-    'ai-actions': aiActionsInlineContentSpec,
   },
   extensions: () => [aiDiffBlockFoldExtension()],
   editorProps: () => {
     const props: Partial<EditorProps> = {
       handleDOMEvents: {
+        // 拦截处理 Backspace 和 Delete 键按下事件
+        // 返回值为boolean，true表示事件被拦截处理完毕，false表示不拦截
         keydown: (view, event) => {
           if (!(event instanceof KeyboardEvent)) return false;
           if (event.key !== 'Backspace' && event.key !== 'Delete') return false;
@@ -467,38 +516,11 @@ export const aiDiffPlugin = {
           if (selection instanceof NodeSelection) {
             const node = selection.node;
             const name = node.type.name;
-            if (!isAIDiffNodeName(name)) return false;
-            const key = getNodeKey(node);
-            if (!key) return false;
-
             const from = selection.from;
             const to = selection.to;
-            const $from = doc.resolve(from);
-            const $to = doc.resolve(to);
-
-            if (name === 'ai-actions') {
-              const ranges = buildDeleteRanges({
-                actionFrom: from,
-                actionTo: to,
-                actionKey: key,
-                beforeNode: $from.nodeBefore,
-                afterNode: $to.nodeAfter,
-              });
-              event.preventDefault();
-              deleteRanges(view, ranges);
-              return true;
-            }
-
-            const ranges = buildDeleteRangesForChange({
-              changeFrom: from,
-              changeTo: to,
-              changeKey: key,
-              beforeNode: $from.nodeBefore,
-              afterNode: $to.nodeAfter,
-            });
-            if (!ranges) return false;
+            if (!isAiDiffChangeNodeName(name)) return false;
             event.preventDefault();
-            deleteRanges(view, ranges);
+            deleteRangesAndMaybeRemoveEmptyBlock({ view, ranges: [{ from, to }], probePos: from });
             return true;
           }
 
@@ -510,74 +532,28 @@ export const aiDiffPlugin = {
               const beforeNode = $pos.nodeBefore;
               if (!beforeNode) return false;
               const name = beforeNode.type.name;
-              if (!isAIDiffNodeName(name)) return false;
-              const key = getNodeKey(beforeNode);
-              if (!key) return false;
+              if (!isAiDiffChangeNodeName(name)) return false;
 
               const from = pos - beforeNode.nodeSize;
               const to = pos;
-              const $from = doc.resolve(from);
-
-              if (name === 'ai-actions') {
-                const ranges = buildDeleteRanges({
-                  actionFrom: from,
-                  actionTo: to,
-                  actionKey: key,
-                  beforeNode: $from.nodeBefore,
-                  afterNode: $pos.nodeAfter,
-                });
-                event.preventDefault();
-                deleteRanges(view, ranges);
-                return true;
-              }
-
-              const ranges = buildDeleteRangesForChange({
-                changeFrom: from,
-                changeTo: to,
-                changeKey: key,
-                beforeNode: $from.nodeBefore,
-                afterNode: $pos.nodeAfter,
-              });
-              if (!ranges) return false;
               event.preventDefault();
-              deleteRanges(view, ranges);
+              deleteRangesAndMaybeRemoveEmptyBlock({
+                view,
+                ranges: [{ from, to }],
+                probePos: from,
+              });
               return true;
             }
 
             const afterNode = $pos.nodeAfter;
             if (!afterNode) return false;
             const name = afterNode.type.name;
-            if (!isAIDiffNodeName(name)) return false;
-            const key = getNodeKey(afterNode);
-            if (!key) return false;
+            if (!isAiDiffChangeNodeName(name)) return false;
 
             const from = pos;
             const to = pos + afterNode.nodeSize;
-            const $to = doc.resolve(to);
-
-            if (name === 'ai-actions') {
-              const ranges = buildDeleteRanges({
-                actionFrom: from,
-                actionTo: to,
-                actionKey: key,
-                beforeNode: $pos.nodeBefore,
-                afterNode: $to.nodeAfter,
-              });
-              event.preventDefault();
-              deleteRanges(view, ranges);
-              return true;
-            }
-
-            const ranges = buildDeleteRangesForChange({
-              changeFrom: from,
-              changeTo: to,
-              changeKey: key,
-              beforeNode: $pos.nodeBefore,
-              afterNode: $to.nodeAfter,
-            });
-            if (!ranges) return false;
             event.preventDefault();
-            deleteRanges(view, ranges);
+            deleteRangesAndMaybeRemoveEmptyBlock({ view, ranges: [{ from, to }], probePos: from });
             return true;
           }
 
@@ -586,6 +562,11 @@ export const aiDiffPlugin = {
       },
     };
     return props;
+  },
+  // 注册斜杠菜单项（仅在 mock 模式下）
+  slashMenu: ({ editor }) => {
+    if (import.meta.env.MODE !== 'mock') return [];
+    return [createMockAskAiSlashMenuItem(editor)];
   },
 } satisfies NoteEditorPlugin;
 

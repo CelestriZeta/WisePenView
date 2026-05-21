@@ -18,14 +18,12 @@ type AiDiffInlineContent = {
 };
 type AiAddInlineContent = { type: 'ai-add'; props: { text: string; key: string } };
 type AiDeleteInlineContent = { type: 'ai-delete'; props: { text: string; key: string } };
-type AiActionsInlineContent = { type: 'ai-actions'; props: { key: string } };
 
 export type NoteInlineContentLike =
   | TextInlineContent
   | AiDiffInlineContent
   | AiAddInlineContent
   | AiDeleteInlineContent
-  | AiActionsInlineContent
   | Record<string, unknown>;
 
 export type AiPatchValidationResult =
@@ -558,7 +556,6 @@ function applyAiDiffInlineContentAll(
   const out: NoteInlineContentLike[] = [];
   for (const n of content) {
     const t = getType(n);
-    if (t === 'ai-actions') continue;
     if (t === 'ai-diff') {
       const props = getProps(n);
       const nextText =
@@ -635,9 +632,6 @@ export function applyAiDiffActionForKey(
 
   const out: NoteInlineContentLike[] = [];
   for (let i = 0; i < nodes.length; i += 1) {
-    if (getType(nodes[i]) === 'ai-actions') {
-      continue;
-    }
     if (i === changeIndex) {
       out.push(...replacement);
       continue;
@@ -655,9 +649,6 @@ export function isInlineContentEffectivelyEmpty(content: unknown): boolean {
     const t = getType(n);
     if (t === 'ai-diff' || t === 'ai-add' || t === 'ai-delete') {
       return false;
-    }
-    if (t === 'ai-actions') {
-      continue;
     }
     if (t === 'text') {
       if (getText(n).trim() !== '') return false;
