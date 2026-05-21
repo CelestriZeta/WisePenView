@@ -9,7 +9,15 @@ import HomeLayout from '@/layouts/HomeLayout';
 import AdminRouteGuard from '@/views/admin/guard/AdminRouteGuard';
 
 // 页面使用 lazy load，按路由切分 chunk
-const AdminPage = lazy(() => import('@/views/admin/AdminPage'));
+const UserManagement = lazy(() => import('@/views/admin/UserManagement'));
+const ResourceManagement = lazy(() => import('@/views/admin/ResourceManagement'));
+const GroupManagement = lazy(() => import('@/views/admin/GroupManagement'));
+const AnnouncementManagement = lazy(() => import('@/views/admin/AnnouncementManagement'));
+const DataStatistics = lazy(() => import('@/views/admin/DataStatistics'));
+const PermissionManagement = lazy(() => import('@/views/admin/PermissionManagement'));
+const SystemSettings = lazy(() => import('@/views/admin/SystemSettings'));
+const LogAudit = lazy(() => import('@/views/admin/LogAudit'));
+const TaskCenter = lazy(() => import('@/views/admin/TaskCenter'));
 const Home = lazy(() => import('@/views/app/home'));
 const Drive = lazy(() => import('@/views/app/drive/Drive'));
 const MyGroup = lazy(() => import('@/views/app/group/MyGroup'));
@@ -163,39 +171,39 @@ const router = createBrowserRouter([
           },
           {
             path: 'users',
-            element: <AdminPage pageKey="users" />,
+            element: <UserManagement />,
           },
           {
             path: 'resources',
-            element: <AdminPage pageKey="resources" />,
+            element: <ResourceManagement />,
           },
           {
             path: 'groups',
-            element: <AdminPage pageKey="groups" />,
+            element: <GroupManagement />,
           },
           {
             path: 'announcements',
-            element: <AdminPage pageKey="announcements" />,
+            element: <AnnouncementManagement />,
           },
           {
             path: 'statistics',
-            element: <AdminPage pageKey="statistics" />,
+            element: <DataStatistics />,
           },
           {
             path: 'permissions',
-            element: <AdminPage pageKey="permissions" />,
+            element: <PermissionManagement />,
           },
           {
             path: 'settings',
-            element: <AdminPage pageKey="settings" />,
+            element: <SystemSettings />,
           },
           {
             path: 'logs',
-            element: <AdminPage pageKey="logs" />,
+            element: <LogAudit />,
           },
           {
             path: 'tasks',
-            element: <AdminPage pageKey="tasks" />,
+            element: <TaskCenter />,
           },
         ],
       },
