@@ -1,3 +1,4 @@
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { normalizeResourceItem } from '@/utils/normalize/normalizeResourceItem';
 import { computeFileMd5 } from '@/utils/oss/computeFileMd5';
 import { putOssPresignedUrl } from '@/utils/oss/ossPresignedPut';
@@ -25,11 +26,11 @@ const DOCUMENT_MAX_FILE_BYTES = 100 * 1024 * 1024;
 
 const assertDocumentUploadAllowed = (file: File): void => {
   if (file.size > DOCUMENT_MAX_FILE_BYTES) {
-    throw new Error('文件大小超过 100MB 限制');
+    throw createClientError(FRONTEND_CLIENT_ERROR.DOCUMENT_FILE_TOO_LARGE);
   }
   const ext = parseExtension(file.name);
   if (!isAllowedExtension(ext)) {
-    throw new Error('不支持的文件类型，仅支持 doc/docx/ppt/pptx/xls/xlsx/pdf');
+    throw createClientError(FRONTEND_CLIENT_ERROR.DOCUMENT_UNSUPPORTED_TYPE);
   }
 };
 
@@ -38,7 +39,7 @@ const initUpload = async (
 ): Promise<DocumentUploadInitResponse> => {
   const res = await DocumentApi.uploadDoc(body);
   if (res == null) {
-    throw new Error('上传初始化无数据');
+    throw createClientError(FRONTEND_CLIENT_ERROR.DOCUMENT_UPLOAD_INIT_EMPTY);
   }
   return res;
 };
@@ -71,7 +72,7 @@ const uploadDocument = async (params: UploadDocumentParams): Promise<UploadDocum
     init.callbackHeader == null ||
     init.callbackHeader === ''
   ) {
-    throw new Error('上传初始化未返回有效的直传地址');
+    throw createClientError(FRONTEND_CLIENT_ERROR.DOCUMENT_UPLOAD_URL_INVALID);
   }
 
   await putOssPresignedUrl({

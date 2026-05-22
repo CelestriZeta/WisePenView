@@ -17,7 +17,7 @@ import {
   type TagResourceMountMode,
 } from '@/domains/Tag';
 import { useAppMessage } from '@/hooks/useAppMessage';
-import { parseErrorMessage } from '@/utils/error/parseErrorMessage';
+import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { useRequest } from 'ahooks';
 import { Button, Checkbox, Empty, Form, Modal, Radio, Select } from 'antd';
 import { useState } from 'react';
@@ -231,7 +231,7 @@ const TagPermissionModal = ({
   const { loading: saving, run: runSavePermission } = useRequest(
     async (values: TagPermissionFormValues) => {
       if (!selectedTag?.tagId) return;
-      if (!groupId) throw new Error('小组ID不存在');
+      if (!groupId) throw createClientError(FRONTEND_CLIENT_ERROR.GROUP_ID_REQUIRED);
       const aclGrantMode = values.aclGrantMode ?? TAG_ACL_GRANT_MODE.ALL;
       const resourceMountMode = values.resourceMountMode ?? TAG_RESOURCE_MOUNT_MODE.ALL;
       await tagService.updateTag({
