@@ -13,6 +13,7 @@ import {
   useNewNoteStore,
   useNoteSelectionStore,
 } from '@/store';
+import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import NoteSlashMenu from '../NoteSlashMenu';
 import NoteToolbar from '../NoteToolbar';
 import { blockNoteSchema } from './blockNoteSchema';
@@ -73,13 +74,12 @@ function CustomBlockNote({
     async (file: File) => {
       // 只拦截图片：非图片文件让 BlockNote 走默认行为（或抛错以阻止插入）
       if (!file.type.startsWith('image/')) {
-        throw new Error('仅支持插入图片文件');
+        throw createClientError(FRONTEND_CLIENT_ERROR.IMAGE_ONLY);
       }
       try {
         assertImageProxyUploadLimit(file);
       } catch (error) {
-        const text = error instanceof Error ? error.message : '图片上传失败';
-        message.error(text);
+        message.error(parseErrorMessage(error));
         throw error;
       }
       const { publicUrl } = await imageService.uploadImage({

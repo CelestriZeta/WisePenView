@@ -1,6 +1,7 @@
 import type { Group, GroupFileOrgLogic, GroupMemberList, GroupResConfig } from '@/domains/Group';
 import { GROUP_FILE_ORG_LOGIC, ROLE } from '@/domains/Group';
 import type { EnumKey } from '@/utils/enum';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { formatTimestampToDate } from '@/utils/format/formatTime';
 import { normalizeId } from '@/utils/normalize/normalizeId';
 import { GroupApi, GroupMemberApi, GroupResConfigApi } from '../apis/GroupApi';
@@ -51,24 +52,24 @@ const fetchGroupInfo = async (groupId: string): Promise<Group> => {
   const data: Group | null = await (myRole === 'MEMBER'
     ? GroupApi.getGroupBaseInfo({ groupId })
     : GroupApi.getGroupDetailInfo({ groupId }));
-  if (!data) throw new Error('获取小组详情失败');
+  if (!data) throw createClientError(FRONTEND_CLIENT_ERROR.GROUP_INFO_FETCH_FAILED);
   return normalizeGroup(data as unknown as GroupRaw);
 };
 
 const getGroupWalletInfo = async (params: GetGroupWalletInfoRequest): Promise<number> => {
   const { groupId } = params;
-  if (!groupId) throw new Error('小组 ID 不能为空');
+  if (!groupId) throw createClientError(FRONTEND_CLIENT_ERROR.GROUP_ID_REQUIRED);
   const data = await GroupApi.getGroupDetailInfo({ groupId });
-  if (!data) throw new Error('获取小组钱包信息失败');
+  if (!data) throw createClientError(FRONTEND_CLIENT_ERROR.GROUP_WALLET_FETCH_FAILED);
   return data.tokenBalance ?? 0;
 };
 
 const fetchGroupResConfig = async (groupId: string): Promise<GroupResConfig> => {
   const data = await GroupResConfigApi.getConfig({ groupId });
-  if (!data) throw new Error('获取小组资源配置失败');
+  if (!data) throw createClientError(FRONTEND_CLIENT_ERROR.GROUP_RES_CONFIG_FETCH_FAILED);
   const { fileOrgLogic, groupId: gid } = data;
   if (!isGroupFileOrgLogic(fileOrgLogic)) {
-    throw new Error('资源配置格式异常');
+    throw createClientError(FRONTEND_CLIENT_ERROR.GROUP_RES_CONFIG_INVALID);
   }
   return {
     groupId: normalizeId(gid ?? groupId),
@@ -83,11 +84,11 @@ const updateGroupResConfig = async (params: UpdateGroupResConfigRequest) => {
 const createGroup = async (params: CreateGroupRequest): Promise<string> => {
   const payload = await GroupApi.addGroup(params);
   if (payload == null) {
-    throw new Error('创建小组失败');
+    throw createClientError(FRONTEND_CLIENT_ERROR.GROUP_CREATE_FAILED);
   }
   const groupId = normalizeId(payload);
   if (!groupId) {
-    throw new Error('创建小组失败');
+    throw createClientError(FRONTEND_CLIENT_ERROR.GROUP_CREATE_FAILED);
   }
   return groupId;
 };
@@ -122,7 +123,9 @@ const fetchGroupMembers = async (
 const fetchMyRoleInGroup = async (groupId: string): Promise<EnumKey<typeof ROLE>> => {
   const data = await GroupMemberApi.getMyRole(groupId);
   const roleNum = typeof data === 'number' ? data : data?.role;
-  if (roleNum == null || roleNum < 0) throw new Error('获取角色失败');
+  if (roleNum == null || roleNum < 0) {
+    throw createClientError(FRONTEND_CLIENT_ERROR.GROUP_ROLE_FETCH_FAILED);
+  }
   return ROLE.getKey(roleNum) ?? 'MEMBER';
 };
 

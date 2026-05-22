@@ -1,5 +1,6 @@
 import type { NoteInfoResponse } from '@/domains/Note';
 import { useNewNoteStore, useNoteSelectionStore, usePdfPreviewProgressStore } from '@/store';
+import { createClientError, FRONTEND_CLIENT_ERROR } from '@/utils/error';
 import { formatTimestampToDateTime } from '@/utils/format/formatTime';
 import { normalizeResourceItem } from '@/utils/normalize/normalizeResourceItem';
 import { NoteApi } from '../apis/NoteApi';
@@ -43,7 +44,7 @@ const deleteNote = async (params: DeleteNoteRequest): Promise<void> => {
 const getNoteInfoDisplay = async (params: GetNoteInfoRequest): Promise<NoteInfoDisplayData> => {
   const noteInfoData = (await NoteApi.getNoteInfo(params)) as NoteInfoResponse;
   if (!noteInfoData?.resourceInfo || !noteInfoData?.noteInfo) {
-    throw new Error('笔记不存在或已被删除');
+    throw createClientError(FRONTEND_CLIENT_ERROR.NOTE_NOT_FOUND);
   }
   // readCount/likeCount 后端以字符串返回（Java Long），归一化为 number
   const resourceInfo = normalizeResourceItem(noteInfoData.resourceInfo);

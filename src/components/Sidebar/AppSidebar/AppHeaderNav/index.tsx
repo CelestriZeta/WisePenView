@@ -1,7 +1,7 @@
 import { useChatService, useNoteService } from '@/domains';
 import { useAppMessage } from '@/hooks/useAppMessage';
 import { useNewChatSessionStore, useNewNoteStore } from '@/store';
-import { parseErrorMessage } from '@/utils/error';
+import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { useRequest } from 'ahooks';
 import type { MenuProps } from 'antd';
 import { Menu } from 'antd';
@@ -52,7 +52,7 @@ function AppHeaderNav({ collapsed, onSessionCreated }: AppHeaderNavProps) {
     async () => {
       const { resourceId } = await noteService.createNote({ title: '未命名笔记' });
       if (!resourceId) {
-        throw new Error('创建笔记失败：未获取到资源ID');
+        throw createClientError(FRONTEND_CLIENT_ERROR.NOTE_CREATE_RESOURCE_ID_MISSING);
       }
       return { resourceId };
     },
@@ -62,8 +62,8 @@ function AppHeaderNav({ collapsed, onSessionCreated }: AppHeaderNavProps) {
         useNewNoteStore.getState().setNewNoteResourceId(resourceId);
         navigate(`/app/note/${encodeURIComponent(resourceId)}`);
       },
-      onError: () => {
-        messageApi.error('创建笔记失败，请稍后重试');
+      onError: (err) => {
+        messageApi.error(parseErrorMessage(err));
       },
     }
   );

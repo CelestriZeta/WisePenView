@@ -1,3 +1,4 @@
+import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { Upload } from 'antd';
 
 /** 与后端 `wisepen.storage.max-small-file-size` 默认一致 */
@@ -10,7 +11,9 @@ export const IMAGE_UPLOAD_MAX_SIZE_LABEL = '5MB';
  */
 export function assertImageProxyUploadLimit(file: File): void {
   if (file.size > IMAGE_UPLOAD_MAX_BYTES) {
-    throw new Error(`图片大小不能超过 ${IMAGE_UPLOAD_MAX_SIZE_LABEL}`);
+    throw createClientError(FRONTEND_CLIENT_ERROR.IMAGE_FILE_TOO_LARGE, {
+      maxSize: IMAGE_UPLOAD_MAX_SIZE_LABEL,
+    });
   }
 }
 
@@ -24,7 +27,13 @@ export const createBeforeUploadImageWithinLimit = (
 ): ((file: File) => boolean | typeof Upload.LIST_IGNORE) => {
   return (file: File) => {
     if (file.size > IMAGE_UPLOAD_MAX_BYTES) {
-      onOversize(`图片大小不能超过 ${IMAGE_UPLOAD_MAX_SIZE_LABEL}`);
+      onOversize(
+        parseErrorMessage(
+          createClientError(FRONTEND_CLIENT_ERROR.IMAGE_FILE_TOO_LARGE, {
+            maxSize: IMAGE_UPLOAD_MAX_SIZE_LABEL,
+          })
+        )
+      );
       return Upload.LIST_IGNORE;
     }
     return false;
