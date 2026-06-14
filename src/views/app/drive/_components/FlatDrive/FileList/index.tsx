@@ -1,8 +1,10 @@
 import EntryIcon from '@/components/Common/EntryIcon';
 import IconText from '@/components/Common/IconText';
+import { subscribeResourcePermissionRefresh } from '@/components/Drive/common/resourcePermissionRefreshEvent';
 import { DataTable, type DataTableColumn } from '@/components/Table';
 import { useResourceService } from '@/domains';
 import type { ResourceItem } from '@/domains/Resource';
+import { useEffectForce } from '@/hooks/useEffectForce';
 import { useNavigateResource } from '@/hooks/useNavigateResource';
 import { parseErrorMessage } from '@/utils/error';
 import { formatFileSize } from '@/utils/format/formatFileSize';
@@ -237,6 +239,12 @@ function FileList({ groupId, filter }: FileListProps) {
       },
     }
   );
+
+  /**
+   * 资源权限可能从详情页、预览页或云盘表格入口保存。
+   * 扁平云盘需要在保存后重新拉取当前筛选列表，cleanup 负责移除事件监听。
+   */
+  useEffectForce(() => subscribeResourcePermissionRefresh(fetchList), [fetchList]);
 
   const handleRenameFileModalClose = () => {
     setRenameFileModalOpen(false);

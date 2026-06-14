@@ -1,5 +1,13 @@
 import type { DegreeLevel, UserVerificationMode } from '@/domains/User';
 
+export interface PageR<T> {
+  list: T[];
+  total: number;
+  page: number;
+  size: number;
+  totalPage: number;
+}
+
 export interface GetUserInfoApiResponseUserInfo {
   nickname: string | null;
   realName: string | null;
@@ -30,6 +38,23 @@ export interface GetUserInfoApiResponse {
   userProfile: GetUserInfoApiResponseUserProfile;
   readonlyFields: string[] | null;
 }
+
+export interface SearchUsersApiRequest {
+  keyword?: string;
+  groupIds?: string[];
+  page: number;
+  size: number;
+}
+
+export interface SearchUserApiModel {
+  userId?: string | number | null;
+  nickname?: string | null;
+  realName?: string | null;
+  avatar?: string | null;
+  identityType?: number | null;
+}
+
+export type SearchUsersApiResponse = PageR<SearchUserApiModel>;
 
 export interface ChangeUserInfoApiRequest {
   nickname?: string;

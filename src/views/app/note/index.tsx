@@ -15,6 +15,7 @@ import {
   type NoteOutlineItem,
 } from '@/components/Note/NoteOutline/index.type';
 import ResourceInteractFooter from '@/components/Resource/ResourceInteractFooter';
+import ResourcePermissionModal from '@/components/Resource/ResourcePermissionModal';
 import ResourceViewerHeader from '@/components/Resource/ResourceViewerHeader';
 import rvhStyles from '@/components/Resource/ResourceViewerHeader/style.module.less';
 import { useNoteService, useResourceService, useUserService } from '@/domains';
@@ -27,7 +28,6 @@ import { useAiDiffDisplayStore } from '@/store';
 import { parseErrorMessage } from '@/utils/error';
 import { Alert, Button, Dropdown, toast } from '@heroui/react';
 import NoteInfoBar from './_components/NoteInfoBar';
-import NotePermissionModal from './_components/NotePermissionModal';
 import NoteTitle from './_components/NoteTitle';
 import type { NoteTitleHandle } from './_components/NoteTitle/index.type';
 import styles from './style.module.less';
@@ -202,6 +202,9 @@ function NoteViewConnected({
 
   const handleMoreAction = (key: React.Key) => {
     if (key === 'permission') {
+      if (!canManageNotePermission) {
+        return;
+      }
       setIsPermissionModalOpen(true);
       return;
     }
@@ -250,11 +253,13 @@ function NoteViewConnected({
                 </Dropdown.Trigger>
                 <Dropdown.Popover placement="bottom end">
                   <Dropdown.Menu aria-label="笔记更多操作" onAction={handleMoreAction}>
-                    {canManageNotePermission ? (
-                      <Dropdown.Item id="permission" textValue="权限配置">
-                        权限配置
-                      </Dropdown.Item>
-                    ) : null}
+                    <Dropdown.Item
+                      id="permission"
+                      textValue="权限配置"
+                      isDisabled={!canManageNotePermission}
+                    >
+                      权限配置
+                    </Dropdown.Item>
                     <Dropdown.Item id="print-pdf" textValue="打印为pdf">
                       打印为pdf
                     </Dropdown.Item>
@@ -388,9 +393,10 @@ function NoteViewConnected({
           </div>
         ) : null}
       </div>
-      <NotePermissionModal
+      <ResourcePermissionModal
         isOpen={isPermissionModalOpen}
         resourceId={resourceId}
+        resourceType="note"
         onOpenChange={setIsPermissionModalOpen}
         onSuccess={onRefreshNoteInfo}
       />

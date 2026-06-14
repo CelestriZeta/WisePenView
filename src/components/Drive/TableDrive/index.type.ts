@@ -24,6 +24,7 @@ export interface TableDriveActionConfig {
     canDelete?: DriveRowPredicate;
     canMove?: DriveRowPredicate;
     canManageNodePermission?: DriveRowPredicate;
+    canManageResourcePermission?: DriveRowPredicate;
   };
 }
 

@@ -5,6 +5,7 @@ import type {
   UploadDocumentParams,
   UploadDocumentResult,
 } from '@/domains/Document';
+import { applyMockResourcePermissionConfig } from '@/domains/Resource/mock/resourcePermissionStore';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -45,6 +46,19 @@ const cancelPendingDoc = async (_documentId: string): Promise<void> => {
 
 const getDocInfo = async (documentId: string): Promise<DocDisplayInfoResponse> => {
   await delay(200);
+  const resourceInfo = applyMockResourcePermissionConfig({
+    resourceId: documentId,
+    resourceName: `mock-${documentId}.pdf`,
+    ownerId: '1',
+    ownerInfo: {
+      nickname: 'Mock User',
+      realName: '张三',
+      avatar: '',
+      identityType: 1,
+    },
+    resourceType: 'file',
+    size: 1024 * 1024 * 2,
+  });
   return {
     docMetaInfo: {
       uploadMeta: {
@@ -58,16 +72,7 @@ const getDocInfo = async (documentId: string): Promise<DocDisplayInfoResponse> =
       },
       maxPreviewPages: 20,
     },
-    resourceInfo: {
-      resourceId: documentId,
-      resourceName: `mock-${documentId}.pdf`,
-      ownerInfo: {
-        nickname: 'Mock User',
-        avatar: '',
-        identityType: 0,
-      },
-      resourceType: 'file',
-    },
+    resourceInfo,
   };
 };
 

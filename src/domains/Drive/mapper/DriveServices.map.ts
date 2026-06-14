@@ -86,6 +86,7 @@ export const mapResourceItemToChildNode = (
     resourceId: item.resourceId,
     title: item.resourceName,
     resourceType: normalizeResourceType(item.resourceType),
+    ownerId: item.ownerId,
   } as const;
   if (item.mainTagId === parentTagId) {
     return {

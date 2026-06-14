@@ -119,6 +119,7 @@ function GroupDetail() {
                   canDelete: groupDisplayConfig.canCreateTag,
                   canMove: groupDisplayConfig.canCreateTag,
                   canManageNodePermission: groupDisplayConfig.canManageTag,
+                  canManageResourcePermission: true,
                 },
               }}
             />

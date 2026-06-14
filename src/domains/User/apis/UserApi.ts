@@ -1,4 +1,5 @@
 import { apiGet, apiPost, apiPut } from '@/apis/request';
+import { serializeRepeatKeyQuery } from '@/apis/serializeRepeatKeyQuery';
 import type {
   ChangeUserInfoApiRequest,
   ChangeUserProfileApiRequest,
@@ -8,6 +9,8 @@ import type {
   InitiateFudanUISVerifyApiRequest,
   ListTransactionsApiRequest,
   RedeemVoucherApiRequest,
+  SearchUsersApiRequest,
+  SearchUsersApiResponse,
   TransferTokenBetweenGroupAndUserApiRequest,
 } from './UserApi.type';
 
@@ -15,6 +18,13 @@ import type {
 
 function getUserInfo(): Promise<GetUserInfoApiResponse> {
   return apiGet('/user/getUserInfo');
+}
+
+function searchUsers(req: SearchUsersApiRequest): Promise<SearchUsersApiResponse> {
+  return apiGet('/user/search', {
+    params: req,
+    paramsSerializer: serializeRepeatKeyQuery,
+  });
 }
 
 function initiateEmailVerify(req: InitiateEmailVerifyApiRequest): Promise<void> {
@@ -43,6 +53,7 @@ function changeUserProfile(req: ChangeUserProfileApiRequest): Promise<unknown> {
 
 export const UserApi = {
   getUserInfo,
+  searchUsers,
   initiateEmailVerify,
   initiateFudanUISVerify,
   checkFudanUISVerify,

@@ -1,4 +1,4 @@
-import type { User, UserAccountProfile } from '@/domains/User';
+import type { SearchableUser, User, UserAccountProfile } from '@/domains/User';
 import { normalizeId } from '@/utils/normalize/normalizeId';
 import type {
   ChangeUserInfoApiRequest,
@@ -7,11 +7,15 @@ import type {
   GetUserInfoApiResponse,
   InitiateEmailVerifyApiRequest,
   InitiateFudanUISVerifyApiRequest,
+  SearchUsersApiRequest,
+  SearchUsersApiResponse,
 } from '../apis/UserApi.type';
 import type {
   ConfirmEmailVerifyRequest,
   FudanUISVerifyStatusData,
   InitiateUISVerifyRequest,
+  SearchUsersRequest,
+  SearchUsersResult,
   SendEmailVerifyRequest,
   UpdateUserInfoRequest,
 } from '../service/index.type';
@@ -54,6 +58,29 @@ const mapUserSafeFromAccountProfile = (data: UserAccountProfile): CachedUserSafe
   nickname: data.userInfo.nickname,
   avatar: data.userInfo.avatar,
   identityType: data.userInfo.identityType,
+});
+
+const mapSearchUsersRequest = (params: SearchUsersRequest): SearchUsersApiRequest => ({
+  keyword: params.keyword?.trim() || undefined,
+  groupIds: params.groupIds?.filter((groupId) => groupId.trim() !== ''),
+  page: params.page,
+  size: params.size,
+});
+
+const mapSearchUserFromApi = (item: SearchUsersApiResponse['list'][number]): SearchableUser => ({
+  id: normalizeId(item.userId),
+  nickname: item.nickname ?? undefined,
+  realName: item.realName ?? undefined,
+  avatar: item.avatar ?? undefined,
+  identityType: item.identityType ?? undefined,
+});
+
+const mapSearchUsersFromApi = (data: SearchUsersApiResponse): SearchUsersResult => ({
+  list: data.list.map(mapSearchUserFromApi).filter((item) => item.id !== ''),
+  total: Number(data.total ?? 0),
+  page: Number(data.page ?? 1),
+  size: Number(data.size ?? 0),
+  totalPage: Number(data.totalPage ?? 0),
 });
 
 const mapSendEmailVerifyRequest = (
@@ -128,6 +155,8 @@ const mapUpdateUserInfoRequests = (
 export const UserServicesMap = {
   mapAccountProfileFromApi,
   mapUserSafeFromAccountProfile,
+  mapSearchUsersRequest,
+  mapSearchUsersFromApi,
   mapSendEmailVerifyRequest,
   mapInitiateUISVerifyRequest,
   mapFudanUISVerifyStatusFromApi,

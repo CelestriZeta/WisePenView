@@ -1,0 +1,140 @@
+.modalContainer {
+  width: min(560px, calc(100vw - 32px)) !important;
+  max-width: min(560px, calc(100vw - 32px)) !important;
+}
+
+.modalDialog {
+  width: 100% !important;
+  min-height: min(520px, calc(100vh - 64px)) !important;
+  max-width: none !important;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  min-height: 440px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.overrideRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.overrideLabel {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.overrideLabelMuted {
+  color: var(--text-muted);
+  opacity: 0.55;
+}
+
+.userList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.userRow {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.userHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.userInfo {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.avatar {
+  flex: 0 0 auto;
+}
+
+.userText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.userName {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userSubText {
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.permissionTrigger {
+  flex: 0 0 auto;
+  min-width: 104px;
+  justify-content: space-between;
+  gap: var(--space-xs);
+}
+
+.permissionTriggerMuted {
+  color: var(--text-muted);
+  opacity: 0.55;
+}
+
+.permissionDropdown {
+  width: 220px;
+  padding: var(--space-sm);
+}
+
+.permissionDropdownFooter {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border-color);
+}
+
+.deleteButton {
+  width: 100%;
+}
+
+@media (max-width: 520px) {
+  .overrideRow,
+  .userHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .permissionTrigger {
+    width: 100%;
+  }
+}

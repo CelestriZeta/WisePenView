@@ -3,7 +3,13 @@
 }
 
 .modalContainer {
-  max-width: min(860px, calc(100vw - 32px));
+  width: min(800px, calc(100vw - 32px)) !important;
+  max-width: min(800px, calc(100vw - 32px)) !important;
+}
+
+.modalDialog {
+  width: 100% !important;
+  max-width: none !important;
 }
 
 .wrapper {
@@ -105,32 +111,4 @@
 
 .userSelectBlock {
   margin-bottom: var(--space-md);
-}
-
-.userSelectList {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: var(--space-xs);
-  max-height: 180px;
-  overflow: auto;
-  padding: var(--space-xs);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  background: var(--surface-secondary);
-}
-
-.userSelectItem {
-  min-width: 0;
-  padding: var(--space-xs);
-}
-
-.userSelectLoading,
-.userSelectEmpty {
-  grid-column: 1 / -1;
-  min-height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--muted);
-  font-size: var(--font-size-sm);
 }

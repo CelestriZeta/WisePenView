@@ -6,13 +6,16 @@ import {
   TagPermissionModal,
   UploadFileToGroupModal,
 } from '@/components/Drive/Modals';
+import ResourcePermissionModal from '@/components/Resource/ResourcePermissionModal';
 import type { FolderTableRowAction } from '@/components/Table';
+import { useUserService } from '@/domains';
+import { useRequest } from 'ahooks';
 import { useCallback, useMemo, useState, type ReactElement } from 'react';
 import type { DriveActionTarget } from '../common/driveComponentModel';
 import { isDriveActionTarget } from '../common/driveComponentModel';
 import type { DriveRowPredicate, DriveTableRow, TableDriveActionConfig } from './index.type';
 
-export type RowActionKind = 'rename' | 'delete' | 'move' | 'permission';
+export type RowActionKind = 'rename' | 'delete' | 'move' | 'permission' | 'resourcePermission';
 
 export interface UseTableDriveActionsParams {
   currentNodeId: string;
@@ -45,12 +48,20 @@ const DEFAULT_ROW_CONFIG: Required<NonNullable<TableDriveActionConfig['row']>> =
   canDelete: true,
   canMove: true,
   canManageNodePermission: false,
+  canManageResourcePermission: true,
 };
 
 const evaluatePredicate = (
   predicate: DriveRowPredicate | undefined,
   node: DriveActionTarget
 ): boolean => (typeof predicate === 'function' ? predicate(node) : Boolean(predicate));
+
+const resolveResourcePermissionType = (node: DriveActionTarget): 'note' | 'document' | null => {
+  if (node.type !== 'resource' && node.type !== 'link') return null;
+  if (node.resourceType === 'note') return 'note';
+  if (node.resourceType === 'document') return 'document';
+  return null;
+};
 
 export function useTableDriveActions({
   currentNodeId,
@@ -60,7 +71,9 @@ export function useTableDriveActions({
   actions,
   refresh,
 }: UseTableDriveActionsParams): UseTableDriveActionsReturn {
+  const userService = useUserService();
   const toolbarConfig = { ...DEFAULT_TOOLBAR_CONFIG, ...actions?.toolbar };
+  const { data: currentUser } = useRequest(() => userService.getUserInfo());
 
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -69,10 +82,15 @@ export function useTableDriveActions({
   const [renameTarget, setRenameTarget] = useState<DriveActionTarget | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DriveActionTarget | null>(null);
   const [moveTarget, setMoveTarget] = useState<DriveActionTarget | null>(null);
+  const [resourcePermissionTarget, setResourcePermissionTarget] =
+    useState<DriveActionTarget | null>(null);
   const existingFolderNames = useMemo(
     () => currentRows.filter((row) => row.node.type === 'folder').map((row) => row.name.trim()),
     [currentRows]
   );
+  const resourcePermissionType = resourcePermissionTarget
+    ? resolveResourcePermissionType(resourcePermissionTarget)
+    : null;
 
   const onRowAction = useCallback((kind: RowActionKind, node: DriveActionTarget) => {
     if (kind === 'rename') {
@@ -90,6 +108,14 @@ export function useTableDriveActions({
     if (kind === 'permission' && node.type === 'folder') {
       setTagPermissionTagId(node.tagId);
       setTagPermissionOpen(true);
+      return;
+    }
+    if (
+      kind === 'resourcePermission' &&
+      (node.type === 'resource' || node.type === 'link') &&
+      resolveResourcePermissionType(node)
+    ) {
+      setResourcePermissionTarget(node);
     }
   }, []);
 
@@ -126,6 +152,19 @@ export function useTableDriveActions({
         },
       },
       {
+        key: 'resourcePermission',
+        label: '权限配置',
+        visible: (row) =>
+          (row.node.type === 'resource' || row.node.type === 'link') &&
+          evaluatePredicate(rowConfig.canManageResourcePermission, row.node),
+        disabled: (row) =>
+          (row.node.type === 'resource' || row.node.type === 'link') &&
+          (!resolveResourcePermissionType(row.node) || row.node.ownerId !== currentUser?.id),
+        onPress: (row) => {
+          if (isDriveActionTarget(row.node)) onRowAction('resourcePermission', row.node);
+        },
+      },
+      {
         key: 'delete',
         label: '删除',
         variant: 'danger',
@@ -136,7 +175,7 @@ export function useTableDriveActions({
         },
       },
     ];
-  }, [actions?.row, onRowAction]);
+  }, [actions?.row, currentUser?.id, onRowAction]);
 
   const ModalHost = useMemo(
     () => (
@@ -207,6 +246,25 @@ export function useTableDriveActions({
           }}
           onSuccess={refresh}
         />
+        {resourcePermissionTarget && resourcePermissionType ? (
+          <ResourcePermissionModal
+            isOpen={resourcePermissionTarget !== null}
+            resourceId={
+              resourcePermissionTarget.type === 'resource' ||
+              resourcePermissionTarget.type === 'link'
+                ? resourcePermissionTarget.resourceId
+                : ''
+            }
+            resourceType={resourcePermissionType}
+            fixedSearchGroupIds={groupId ? [groupId] : undefined}
+            showSearchGroupFilter={!groupId}
+            onOpenChange={(open) => {
+              if (!open) {
+                setResourcePermissionTarget(null);
+              }
+            }}
+          />
+        ) : null}
       </>
     ),
     [
@@ -221,6 +279,8 @@ export function useTableDriveActions({
       uploadOpen,
       tagPermissionOpen,
       tagPermissionTagId,
+      resourcePermissionTarget,
+      resourcePermissionType,
       refresh,
     ]
   );

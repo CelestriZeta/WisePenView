@@ -4,22 +4,25 @@ import IconText from '@/components/Common/IconText';
 import PdfViewer from '@/components/Pdf/PdfViewer/index';
 import ResourceInteractBar from '@/components/Resource/ResourceInteractBar';
 import ResourceInteractFooter from '@/components/Resource/ResourceInteractFooter';
+import ResourcePermissionModal from '@/components/Resource/ResourcePermissionModal';
 import ResourceViewerHeader from '@/components/Resource/ResourceViewerHeader';
 import rvhStyles from '@/components/Resource/ResourceViewerHeader/style.module.less';
-import { useDocumentService, useResourceService } from '@/domains';
+import { useDocumentService, useResourceService, useUserService } from '@/domains';
 import { RESOURCE_TYPE } from '@/domains/Resource';
 import { parseErrorMessage } from '@/utils/error';
-import { Button } from '@heroui/react';
+import { Button, Dropdown } from '@heroui/react';
 import { useRequest } from 'ahooks';
-import { useState } from 'react';
+import { useState, type Key } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import styles from './style.module.less';
 
 function PdfPreview() {
   const { resourceId } = useParams<{ resourceId: string }>();
   const [viewerErrorMap, setViewerErrorMap] = useState<Record<string, unknown>>({});
+  const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
   const documentService = useDocumentService();
   const resourceService = useResourceService();
+  const userService = useUserService();
   const {
     data: docInfo,
     error: docInfoError,
@@ -42,6 +45,12 @@ function PdfPreview() {
   });
 
   const resourceInfo = docInfo?.resourceInfo;
+  const { data: currentUser } = useRequest(() => userService.getUserInfo(), {
+    ready: Boolean(resourceInfo?.ownerId),
+    refreshDeps: [resourceInfo?.ownerId],
+  });
+  const canManageDocumentPermission =
+    Boolean(resourceInfo?.ownerId) && currentUser?.id === resourceInfo?.ownerId;
 
   const currentResourceId = resourceId ?? '';
   const viewerError = viewerErrorMap[currentResourceId];
@@ -53,6 +62,12 @@ function PdfPreview() {
       ...prev,
       [currentResourceId]: error,
     }));
+  };
+
+  const handleMoreAction = (key: Key) => {
+    if (key === 'permission' && canManageDocumentPermission) {
+      setIsPermissionModalOpen(true);
+    }
   };
 
   if (!resourceId) {
@@ -203,6 +218,26 @@ function PdfPreview() {
             {docInfo.resourceInfo.resourceName}
           </IconText>
         }
+        extra={
+          <Dropdown>
+            <Dropdown.Trigger>
+              <Button variant="secondary" size="sm" aria-label="更多">
+                更多
+              </Button>
+            </Dropdown.Trigger>
+            <Dropdown.Popover placement="bottom end">
+              <Dropdown.Menu aria-label="文档更多操作" onAction={handleMoreAction}>
+                <Dropdown.Item
+                  id="permission"
+                  textValue="权限配置"
+                  isDisabled={!canManageDocumentPermission}
+                >
+                  权限配置
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown.Popover>
+          </Dropdown>
+        }
       />
       <div className={styles.content}>
         <div className={styles.root}>
@@ -214,6 +249,13 @@ function PdfPreview() {
           />
         </div>
       </div>
+      <ResourcePermissionModal
+        isOpen={isPermissionModalOpen}
+        resourceId={resourceId as string}
+        resourceType="document"
+        onOpenChange={setIsPermissionModalOpen}
+        onSuccess={() => void refreshDocInfo()}
+      />
     </div>
   );
 }

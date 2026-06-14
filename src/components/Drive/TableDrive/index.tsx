@@ -5,10 +5,12 @@ import {
   type FolderTableRowProps,
 } from '@/components/Table';
 import type { DriveNode } from '@/domains/Drive';
+import { useEffectForce } from '@/hooks/useEffectForce';
 import { Button } from '@heroui/react';
 import { CloudUpload } from 'lucide-react';
 import React, { useMemo, useRef } from 'react';
 import { getDriveNodeLabel, resolveDriveScope } from '../common/driveComponentModel';
+import { subscribeResourcePermissionRefresh } from '../common/resourcePermissionRefreshEvent';
 import { useClickNode } from '../common/useClickNode';
 import {
   DRAG_TYPE_DRIVE_NODE,
@@ -97,6 +99,11 @@ function TableDrive({ groupId, rootId, scope, actions }: TableDriveProps) {
     groupId: finalGroupId,
   });
   const { onDrop } = useDriveDrop({ refresh, groupId: finalGroupId });
+  /**
+   * 资源权限可能从云盘、笔记或 PDF 预览等入口修改。
+   * 保存成功后需要刷新当前挂载的个人/小组云盘表格；这里订阅跨入口事件，cleanup 负责移除监听。
+   */
+  useEffectForce(() => subscribeResourcePermissionRefresh(refresh), [refresh]);
   const rows = useMemo(
     () => dataSource.map((node) => toDriveTableRow(node, loadingMoreParentId)),
     [dataSource, loadingMoreParentId]

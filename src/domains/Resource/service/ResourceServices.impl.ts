@@ -1,5 +1,6 @@
 import { DocumentApi } from '@/domains/Document/apis/DocumentApi';
 import { NoteApi } from '@/domains/Note/apis/NoteApi';
+import { clearAllServiceCaches } from '@/domains/_shared/cacheRegistry';
 import {
   useNewNoteStore,
   useNoteSelectionStore,
@@ -67,6 +68,7 @@ const updateResourceActionPermission = async (
 ): Promise<void> => {
   const request = ResourceServicesMap.mapChangeResourceActionPermissionRequest(params);
   await ResourceItemApi.changeResourceActionPermission(request);
+  clearAllServiceCaches();
 };
 
 /** 获取当前用户点赞状态，供 ResourceLikeButton 薄层调用 */

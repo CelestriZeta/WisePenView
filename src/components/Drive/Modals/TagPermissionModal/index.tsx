@@ -1,6 +1,7 @@
 import { Empty, Spin } from '@/components/Common/Feedback';
 import SegmentedTabs from '@/components/Common/SegmentedTabs';
 import DriveNav from '@/components/Drive/DriveNav';
+import UserMultiSearchSelect from '@/components/User/UserMultiSearchSelect';
 import { useDriveService, useGroupService, useTagService } from '@/domains';
 import type { DriveNode } from '@/domains/Drive';
 import { mapTagToFolderNode } from '@/domains/Drive/mapper/DriveServices.map';
@@ -18,6 +19,7 @@ import {
   type TagResourceAction,
   type TagTreeNode,
 } from '@/domains/Tag';
+import type { SearchableUser } from '@/domains/User';
 import { useEffectForce } from '@/hooks/useEffectForce';
 import { createClientError, FRONTEND_CLIENT_ERROR, parseErrorMessage } from '@/utils/error';
 import { Button, Checkbox, Modal, toast } from '@heroui/react';
@@ -61,13 +63,20 @@ const getSelectableMembers = (members?: GroupMember[]) =>
 const buildSelectableMemberIdSet = (members: GroupMember[]) =>
   new Set(members.map((m) => m.userId));
 
-const buildMemberOptions = (members: GroupMember[]) =>
-  members.map((member) => {
-    const nickname = member.nickname?.trim();
-    const realname = member.realname?.trim();
-    const label = nickname && realname ? `${nickname} (${realname})` : nickname || realname || '-';
-    return { label, value: member.userId };
+const mapMemberToSearchableUser = (member: GroupMember): SearchableUser => ({
+  id: member.userId,
+  nickname: member.nickname || undefined,
+  realName: member.realname || undefined,
+  avatar: member.avatar || undefined,
+});
+
+const buildSelectedUsers = (ids: string[], members: GroupMember[]): SearchableUser[] => {
+  const memberMap = new Map(members.map((member) => [member.userId, member]));
+  return ids.map((id) => {
+    const member = memberMap.get(id);
+    return member ? mapMemberToSearchableUser(member) : { id, nickname: id };
   });
+};
 
 const filterSelectableUserIds = (ids: string[] | undefined, selectableMemberIdSet: Set<string>) => {
   if (!ids || ids.length === 0) return [];
@@ -114,50 +123,6 @@ async function findFolderNodeIdByTagId(params: {
   return undefined;
 }
 
-type UserSelectionListProps = {
-  label: string;
-  loading: boolean;
-  options: Array<{ label: string; value: string }>;
-  value: string[];
-  onToggle: (userId: string, isSelected: boolean) => void;
-};
-
-function UserSelectionList({ label, loading, options, value, onToggle }: UserSelectionListProps) {
-  const selectedIdSet = new Set(value);
-
-  return (
-    <div className={styles.userSelectBlock}>
-      <div className={styles.selectHint}>{label}</div>
-      <div className={styles.userSelectList}>
-        {loading ? (
-          <div className={styles.userSelectLoading}>
-            <Spin size="small" />
-          </div>
-        ) : options.length === 0 ? (
-          <div className={styles.userSelectEmpty}>暂无可选用户</div>
-        ) : (
-          options.map((option) => (
-            <Checkbox
-              key={option.value}
-              isSelected={selectedIdSet.has(option.value)}
-              onChange={(isSelected) => onToggle(option.value, isSelected)}
-              variant="secondary"
-              className={styles.userSelectItem}
-            >
-              <Checkbox.Control>
-                <Checkbox.Indicator />
-              </Checkbox.Control>
-              <Checkbox.Content>
-                <span data-slot="label">{option.label}</span>
-              </Checkbox.Content>
-            </Checkbox>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-
 const TagPermissionModal = ({
   isOpen,
   groupId,
@@ -199,11 +164,7 @@ const TagPermissionModal = ({
     }
   );
 
-  const {
-    data: members,
-    loading: membersLoading,
-    run: runFetchMembers,
-  } = useRequest(
+  const { data: members, run: runFetchMembers } = useRequest(
     async (): Promise<GroupMember[]> => {
       if (!groupId) return [];
       const allMembers: GroupMember[] = [];
@@ -246,7 +207,15 @@ const TagPermissionModal = ({
 
   const selectableMembers = getSelectableMembers(members);
   const selectableMemberIdSet = buildSelectableMemberIdSet(selectableMembers);
-  const memberOptions = buildMemberOptions(selectableMembers);
+  const selectableMemberIds = Array.from(selectableMemberIdSet);
+  const selectedAclUsers = buildSelectedUsers(
+    permissionForm.taggedResourceAclGrantSpecifiedUsers,
+    selectableMembers
+  );
+  const selectedMountUsers = buildSelectedUsers(
+    permissionForm.tagMountSpecifiedUsers,
+    selectableMembers
+  );
   const actionHighlightSet = hoveredAction
     ? new Set([hoveredAction, ...getResourceActionImpliedActions(hoveredAction)])
     : null;
@@ -263,18 +232,14 @@ const TagPermissionModal = ({
     setPermissionForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const toggleUserSelection = (
+  const handleUserSelectionChange = (
     key: 'taggedResourceAclGrantSpecifiedUsers' | 'tagMountSpecifiedUsers',
-    userId: string,
-    isSelected: boolean
+    users: SearchableUser[]
   ) => {
-    setPermissionForm((prev) => {
-      const current = prev[key];
-      return {
-        ...prev,
-        [key]: isSelected ? [...current, userId] : current.filter((id) => id !== userId),
-      };
-    });
+    setPermissionForm((prev) => ({
+      ...prev,
+      [key]: users.map((user) => user.id),
+    }));
   };
 
   const applyTagToForm = (tag: TagTreeNode) => {
@@ -455,7 +420,7 @@ const TagPermissionModal = ({
     <Modal isOpen={isOpen} onOpenChange={handleOpenChange}>
       <Modal.Backdrop isDismissable={!saving}>
         <Modal.Container size="lg" placement="center" className={styles.modalContainer}>
-          <Modal.Dialog>
+          <Modal.Dialog className={styles.modalDialog}>
             <Modal.Header>
               <Modal.Heading>标签权限管理</Modal.Heading>
             </Modal.Header>
@@ -515,19 +480,21 @@ const TagPermissionModal = ({
                           />
 
                           {isAclUserListMode(permissionForm.taggedResourceAclGrantScope) ? (
-                            <UserSelectionList
-                              label="选择用户（不含管理员）"
-                              loading={membersLoading}
-                              options={memberOptions}
-                              value={permissionForm.taggedResourceAclGrantSpecifiedUsers}
-                              onToggle={(userId, isSelected) =>
-                                toggleUserSelection(
-                                  'taggedResourceAclGrantSpecifiedUsers',
-                                  userId,
-                                  isSelected
-                                )
-                              }
-                            />
+                            <div className={styles.userSelectBlock}>
+                              <div className={styles.selectHint}>选择用户（不含管理员）</div>
+                              <UserMultiSearchSelect
+                                value={selectedAclUsers}
+                                allowedUserIds={selectableMemberIds}
+                                fixedGroupIds={groupId ? [groupId] : undefined}
+                                showGroupFilter={false}
+                                onChange={(users) =>
+                                  handleUserSelectionChange(
+                                    'taggedResourceAclGrantSpecifiedUsers',
+                                    users
+                                  )
+                                }
+                              />
+                            </div>
                           ) : null}
 
                           <div className={styles.actionGroup}>
@@ -595,15 +562,18 @@ const TagPermissionModal = ({
                           />
 
                           {isMountUserListMode(permissionForm.tagMountPermissionScope) ? (
-                            <UserSelectionList
-                              label="选择用户（不含管理员）"
-                              loading={membersLoading}
-                              options={memberOptions}
-                              value={permissionForm.tagMountSpecifiedUsers}
-                              onToggle={(userId, isSelected) =>
-                                toggleUserSelection('tagMountSpecifiedUsers', userId, isSelected)
-                              }
-                            />
+                            <div className={styles.userSelectBlock}>
+                              <div className={styles.selectHint}>选择用户（不含管理员）</div>
+                              <UserMultiSearchSelect
+                                value={selectedMountUsers}
+                                allowedUserIds={selectableMemberIds}
+                                fixedGroupIds={groupId ? [groupId] : undefined}
+                                showGroupFilter={false}
+                                onChange={(users) =>
+                                  handleUserSelectionChange('tagMountSpecifiedUsers', users)
+                                }
+                              />
+                            </div>
                           ) : null}
                         </div>
                       </>

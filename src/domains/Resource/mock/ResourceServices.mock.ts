@@ -10,6 +10,7 @@ import type {
   ResourceListPage,
   SearchQueryRequest,
   SearchResultPage,
+  UpdateResourceActionPermissionRequest,
 } from '@/domains/Resource';
 import {
   useNewNoteStore,
@@ -18,6 +19,7 @@ import {
   useResourceDisplayNameStore,
 } from '@/store';
 import mockdata from './mockdata.json';
+import { updateMockResourcePermissionConfig } from './resourcePermissionStore';
 import { simulateGlobalSearch } from './searchMockData';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -186,8 +188,11 @@ const interactRate = async (_params: InteractRateRequest): Promise<void> => {
   await delay(100);
 };
 
-const updateResourceActionPermission = async (): Promise<void> => {
+const updateResourceActionPermission = async (
+  params: UpdateResourceActionPermissionRequest
+): Promise<void> => {
   await delay(100);
+  updateMockResourcePermissionConfig(params);
 };
 
 const getLikeStatus = async (_resourceId: string): Promise<{ liked: boolean }> => {

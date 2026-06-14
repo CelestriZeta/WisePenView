@@ -1,10 +1,5 @@
 import type { NoteInfoResponse } from '@/domains/Note';
-import {
-  coerceResourceActions,
-  maskNoteConfigurableResourceActions,
-  RESOURCE_ACTION,
-  resourceActionsInclude,
-} from '@/domains/Resource';
+import { coerceResourceActions, RESOURCE_ACTION, resourceActionsInclude } from '@/domains/Resource';
 import { normalizeResourceItem } from '@/domains/Resource/mapper/ResourceServices.map';
 import { formatTimestampToDateTime } from '@/utils/format/formatTime';
 import { normalizeId } from '@/utils/normalize/normalizeId';
@@ -59,10 +54,7 @@ const mapSpecifiedUsersGrantedActionsFromApi = (
     return null;
   }
   const mapped = Object.fromEntries(
-    Object.entries(raw).map(([userId, actions]) => [
-      userId,
-      maskNoteConfigurableResourceActions(coerceResourceActions(actions)),
-    ])
+    Object.entries(raw).map(([userId, actions]) => [userId, coerceResourceActions(actions)])
   );
   return Object.keys(mapped).length > 0 ? mapped : null;
 };
@@ -72,8 +64,8 @@ const mapNotePermissionConfigFromApi = (
   fallbackResourceId: string
 ): NotePermissionConfig => {
   const { resourceInfo } = data;
-  const overrideGrantedActions = maskNoteConfigurableResourceActions(
-    coerceResourceActions(resourceInfo.overrideGrantedActions as unknown[] | undefined)
+  const overrideGrantedActions = coerceResourceActions(
+    resourceInfo.overrideGrantedActions as unknown[] | undefined
   );
 
   return {

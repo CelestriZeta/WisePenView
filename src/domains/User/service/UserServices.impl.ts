@@ -7,6 +7,8 @@ import type {
   FudanUISVerifyStatusData,
   InitiateUISVerifyRequest,
   IUserService,
+  SearchUsersRequest,
+  SearchUsersResult,
   SendEmailVerifyRequest,
   UpdateUserInfoRequest,
 } from './index.type';
@@ -37,6 +39,12 @@ const checkFudanUISVerify = async (): Promise<FudanUISVerifyStatusData> => {
 const confirmEmailVerify = async (params: ConfirmEmailVerifyRequest): Promise<void> => {
   const query = UserServicesMap.mapConfirmEmailVerifyRequest(params);
   await UserApi.checkEmailVerify(query);
+};
+
+const searchUsers = async (params: SearchUsersRequest): Promise<SearchUsersResult> => {
+  const query = UserServicesMap.mapSearchUsersRequest(params);
+  const data = await UserApi.searchUsers(query);
+  return UserServicesMap.mapSearchUsersFromApi(data);
 };
 
 export const createUserServices = (): IUserService => {
@@ -82,6 +90,7 @@ export const createUserServices = (): IUserService => {
   return {
     getFullUserInfo,
     getUserInfo,
+    searchUsers,
     updateUserInfo,
     sendEmailVerify,
     initiateUISVerify,

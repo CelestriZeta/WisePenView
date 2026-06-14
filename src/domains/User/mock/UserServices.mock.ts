@@ -1,9 +1,12 @@
 import type {
   FudanUISVerifyStatusData,
   IUserService,
+  SearchUsersRequest,
+  SearchUsersResult,
   User,
   UserAccountProfile,
 } from '@/domains/User';
+import { mockGroupUserIds, mockSearchableUsers } from '@/domains/_shared/mockUserDirectory';
 import type { GetUserInfoApiResponse } from '../apis/UserApi.type';
 import { UserServicesMap } from '../mapper/UserServices.map';
 import mockdata from './mockdata.json';
@@ -27,6 +30,33 @@ const getUserInfo = async (_options?: { forceRefresh?: boolean }): Promise<User>
 const getFullUserInfo = async (): Promise<UserAccountProfile> => {
   await delay(200);
   return UserServicesMap.mapAccountProfileFromApi(fullUserInfo);
+};
+
+const searchUsers = async (params: SearchUsersRequest): Promise<SearchUsersResult> => {
+  await delay(200);
+  const keyword = params.keyword?.trim().toLowerCase() ?? '';
+  const groupScopedIds = params.groupIds?.length
+    ? new Set(params.groupIds.flatMap((groupId) => mockGroupUserIds[groupId] ?? []))
+    : null;
+  const groupScopedUsers = groupScopedIds
+    ? mockSearchableUsers.filter((user) => groupScopedIds.has(user.id))
+    : mockSearchableUsers;
+  const filtered = keyword
+    ? groupScopedUsers.filter((user) =>
+        [user.id, user.nickname, user.realName]
+          .filter((value): value is string => typeof value === 'string')
+          .some((value) => value.toLowerCase().includes(keyword))
+      )
+    : groupScopedUsers;
+  const start = (params.page - 1) * params.size;
+  const list = filtered.slice(start, start + params.size);
+  return {
+    list,
+    total: filtered.length,
+    page: params.page,
+    size: params.size,
+    totalPage: Math.ceil(filtered.length / params.size),
+  };
 };
 
 const sendEmailVerify = async (): Promise<void> => {
@@ -118,6 +148,7 @@ const clearUserCache = (): void => {};
 export const UserServicesMock: IUserService = {
   getFullUserInfo,
   getUserInfo,
+  searchUsers,
   updateUserInfo,
   sendEmailVerify,
   initiateUISVerify,

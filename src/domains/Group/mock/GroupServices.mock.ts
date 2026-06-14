@@ -1,4 +1,5 @@
 import type {
+  FetchGroupListRequest,
   GetGroupWalletInfoRequest,
   Group,
   GroupMember,
@@ -17,9 +18,12 @@ const groupDetail = mockdata.groupDetail as Group;
 const members = mockdata.members as GroupMember[];
 const myRole = mockdata.myRole as 'OWNER' | 'ADMIN' | 'MEMBER';
 
-const fetchGroupList = async (): Promise<{ groups: Group[]; total: number }> => {
+const fetchGroupList = async (
+  params: FetchGroupListRequest
+): Promise<{ groups: Group[]; total: number }> => {
   await delay(200);
-  return { groups, total: groups.length };
+  const start = Math.max(0, (params.page - 1) * params.size);
+  return { groups: groups.slice(start, start + params.size), total: groups.length };
 };
 
 const fetchGroupInfo = async (_groupId: string): Promise<Group> => {

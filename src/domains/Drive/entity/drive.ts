@@ -21,6 +21,7 @@ interface ResourceNode extends DriveNodeBase {
   resourceId: string;
   title: string;
   resourceType: ResourceType;
+  ownerId?: string;
 }
 
 interface TrashNode extends DriveNodeBase {
@@ -34,6 +35,7 @@ interface LinkNode extends DriveNodeBase {
   resourceId: string;
   title: string;
   resourceType: ResourceType;
+  ownerId?: string;
 }
 
 /** 列表末尾「加载更多」占位节点：用于提示某个父目录仍有资源分页，不代表真实文件或文件夹 */

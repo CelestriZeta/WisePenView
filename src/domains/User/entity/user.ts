@@ -11,6 +11,15 @@ export interface User {
   campusNo?: string;
 }
 
+/** 搜索用户返回的轻量展示实体 */
+export interface SearchableUser {
+  id: string;
+  nickname?: string;
+  realName?: string;
+  avatar?: string;
+  identityType?: number;
+}
+
 /** 后端 UserDisplayBase：用于作者/创建者等轻量展示 */
 export interface UserDisplayBase {
   nickname?: string;

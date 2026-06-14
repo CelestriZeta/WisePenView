@@ -1,0 +1,40 @@
+.actionGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.actionGroupStack .actionList {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.selectHint {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.actionList {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-xs);
+}
+
+.actionItem {
+  padding: 2px var(--space-xs);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.actionItemHighlight {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+}
+
+.actionLabel {
+  font-weight: 500;
+  white-space: nowrap;
+}

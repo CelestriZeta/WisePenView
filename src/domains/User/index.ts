@@ -1,4 +1,5 @@
 export type {
+  SearchableUser,
   User,
   UserAccountInfo,
   UserAccountProfile,
@@ -20,6 +21,8 @@ export type {
   FudanUISVerifyStatusData,
   IUserService,
   InitiateUISVerifyRequest,
+  SearchUsersRequest,
+  SearchUsersResult,
   SendEmailVerifyRequest,
   UpdateUserInfoRequest,
 } from './service/index.type';

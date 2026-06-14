@@ -1,4 +1,4 @@
-import type { User, UserAccountProfile } from '../entity/user';
+import type { SearchableUser, User, UserAccountProfile } from '../entity/user';
 import type { DegreeLevel } from '../enum';
 
 /** UserService 接口：供依赖注入使用 */
@@ -7,6 +7,8 @@ export interface IUserService {
   getFullUserInfo(): Promise<UserAccountProfile>;
   /** 展示用精简用户信息，带缓存，供侧栏等展示 */
   getUserInfo(options?: { forceRefresh?: boolean }): Promise<User>;
+  /** 搜索当前用户可见范围内的用户 */
+  searchUsers(params: SearchUsersRequest): Promise<SearchUsersResult>;
   /** 更新用户信息（内部两次 PUT：userInfo + userProfile）；不拉 GET，需全量时由调用方自行 getFullUserInfo */
   updateUserInfo(params: UpdateUserInfoRequest): Promise<void>;
   sendEmailVerify(params: SendEmailVerifyRequest): Promise<void>;
@@ -43,6 +45,21 @@ export interface FudanUISVerifyStatusData {
   /** 需用户操作时：二维码图片的 base64 字符（PNG/JPEG）；可选带 data:image/*;base64, 前缀 */
   actionPayload: string;
   message: string;
+}
+
+export interface SearchUsersRequest {
+  keyword?: string;
+  groupIds?: string[];
+  page: number;
+  size: number;
+}
+
+export interface SearchUsersResult {
+  list: SearchableUser[];
+  total: number;
+  page: number;
+  size: number;
+  totalPage: number;
 }
 
 /** 更新用户信息请求参数（仅基本档案可编辑；账号栏只读；impl 内按 userInfo / userProfile 拆成两次 PUT） */
